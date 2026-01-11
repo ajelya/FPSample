@@ -1,0 +1,84 @@
+﻿@model FPSample.Models.Entities.ServiceRequest
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4>Request Barangay Document</h4>
+        </div>
+        <div class="card-body">
+            <div asp-validation-summary="All" class="text-danger"></div>
+
+            <form asp-action="Create" method="post">
+                <div class="mb-3">
+                    <label>Select Service</label>
+                    <select asp-for="ServiceId" id="serviceSelect" class="form-select">
+                        <option value="">-- Choose Document --</option>
+                        @foreach (var service in ViewBag.ServiceList)
+                        {
+                            <option value="@service.ServiceId">@service.ServiceName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label>Purpose</label>
+                    <select asp-for="PurposeId" id="purposeSelect" class="form-select">
+                        <option value="">-- Select Document First --</option>
+                    </select>
+                </div>
+
+                <div class="mb-3" id="incomeField" style="display:none;">
+                    <label class="text-danger fw-bold">Gross Annual Income (Required for Cedula)</label>
+                    <input asp-for="GrossAnnualIncome" type="number" step="0.01" class="form-control" />
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label>Date to Claim</label>
+                        <input asp-for="DateToClaim" type="date" class="form-control" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Time to Claim</label>
+                        <input asp-for="TimeToClaim" type="time" class="form-control" />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Submit Request</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#serviceSelect').change(function () {
+                var sId = $(this).val();
+                var pSelect = $('#purposeSelect');
+                var incomeDiv = $('#incomeField');
+
+                // Show income field only if "Cedula" is selected
+                var selectedText = $("#serviceSelect option:selected").text();
+                if (selectedText === "Cedula") {
+                    incomeDiv.show();
+                } else {
+                    incomeDiv.hide();
+                }
+
+                pSelect.empty().append('<option value="">-- Loading... --</option>');
+
+                if (sId) {
+                    $.getJSON('/ServiceRequest/GetPurposes', { serviceId: sId }, function (data) {
+                        pSelect.empty().append('<option value="">-- Select Purpose --</option>');
+                        $.each(data, function (i, item) {
+                            pSelect.append('<option value="' + item.purposeId + '">' + item.purposeName + '</option>');
+                        });
+                    });
+                } else {
+                    pSelect.empty().append('<option value="">-- Select Document First --</option>');
+                }
+            });
+        });
+    </script>
+}

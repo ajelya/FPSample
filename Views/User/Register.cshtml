@@ -1,0 +1,123 @@
+﻿@model FPSample.Models.Entities.User
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h4>Resident Registration Form</h4>
+        </div>
+        <div class="card-body">
+            <form asp-action="Register" method="post">
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label>First Name</label>
+                        <input asp-for="FirstName" class="form-control" placeholder="Juan" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label>Middle Name</label>
+                        <input asp-for="MiddleName" class="form-control" placeholder="Optional" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label>Last Name</label>
+                        <input asp-for="LastName" class="form-control" placeholder="Dela Cruz" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label>Suffix</label>
+                        <input asp-for="Suffix" class="form-control" placeholder="Jr / III / Sr" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label>Date of Birth</label>
+                        <input asp-for="DateOfBirth" type="date" class="form-control" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label>Sex</label>
+                        <select asp-for="Sex" class="form-select">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label>Civil Status</label>
+                        <select asp-for="CivilStatus" class="form-select">
+                            <option value="Single">Single</option>
+                            <option value="Married">Married</option>
+                            <option value="Widowed">Widowed</option>
+                            <option value="Separated">Separated</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label>Religion</label>
+                        <input asp-for="Religion" class="form-control" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label>House No./Street</label>
+                        <input asp-for="HouseNoStreet" class="form-control" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Barangay</label>
+                        <input asp-for="Barangay" class="form-control" placeholder="Enter your Barangay"/>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label>City</label>
+                        <input asp-for="City" class="form-control" placeholder="Enter your City" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label>Province</label>
+                        <input asp-for="Province" class="form-control" placeholder="Enter your Province" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label>Stay (Years)</label>
+                        <input asp-for="StayYears" type="number" class="form-control" min="0" />
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label>Stay (Months)</label>
+                        <input asp-for="StayMonths" type="number" class="form-control" min="0" max="11" />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label>Contact No</label>
+                        <input asp-for="ContactNo" type="text" class="form-control" placeholder="09xxxxxxxxx" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label>Email Address</label>
+                        <input asp-for="Email" type="email" class="form-control" placeholder="email@example.com" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label>Registered Voter?</label>
+                        <select asp-for="IsVoter" class="form-select">
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label>Username</label>
+                        <input asp-for="Username" class="form-control" />
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Password</label>
+                        <input asp-for="Password" type="password" class="form-control" />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success w-100 py-2 fw-bold">CREATE ACCOUNT</button>
+            </form>
+        </div>
+    </div>
+</div>
