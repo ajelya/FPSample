@@ -128,19 +128,22 @@ namespace FPSample.Migrations
                     b.Property<decimal?>("GrossAnnualIncome")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("ImagePath")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("PurposeId")
                         .HasColumnType("int");
 
                     b.Property<int>("ServiceId")
                         .HasColumnType("int");
 
+                    b.Property<int>("StatusId")
+                        .HasColumnType("int");
+
                     b.Property<TimeSpan>("TimeToClaim")
                         .HasColumnType("time");
 
-                    b.Property<int>("UserId")
+                    b.Property<string>("UploadPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("RequestId");
@@ -185,8 +188,9 @@ namespace FPSample.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ContactNo")
-                        .HasColumnType("int");
+                    b.Property<string>("ContactNo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
@@ -211,7 +215,6 @@ namespace FPSample.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MiddleName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Password")
@@ -237,7 +240,6 @@ namespace FPSample.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Suffix")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Username")

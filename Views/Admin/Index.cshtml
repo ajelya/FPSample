@@ -1,0 +1,84 @@
+﻿@model IEnumerable<FPSample.Models.Entities.ServiceRequest>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Admin Dashboard</h2>
+        <span class="badge bg-primary">Admin: @Context.Session.GetString("UserName")</span>
+    </div>
+
+    <table class="table table-striped shadow-sm align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Req #</th>
+                <th>Resident ID</th>
+                <th>Income</th>
+                <th>ID Photo</th>
+                <th>Current Status</th>
+                <th style="width: 200px;">Update Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.RequestId</td>
+                    <td>@item.UserId</td>
+                    <td>@(item.GrossAnnualIncome.HasValue? item.GrossAnnualIncome.Value.ToString("N2") : "—")</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(item.UploadPath))
+                        {
+                            <a href="@item.UploadPath" target="_blank">
+                                <img src="@item.UploadPath" width="50" class="img-thumbnail" />
+                            </a>
+                        }
+                    </td>
+                    <td>
+                        @* Visual indicator for current status *@
+                        @if (item.StatusId == 0)
+                        {
+                            <span class="badge bg-secondary">Pending</span>
+                        }
+                        else if (item.StatusId == 1)
+                        {
+
+                            <span class="badge bg-primary">Processing</span>
+                        }
+                        else if (item.StatusId == 2)
+                        {
+
+                            <span class="badge bg-success">Approved</span>
+                        }
+                        else if (item.StatusId == 3)
+                        {
+
+                            <span class="badge bg-info">Picked Up</span>
+                        }
+                        else if (item.StatusId == 4)
+                        {
+
+                            <span class="badge bg-danger">Rejected</span>
+                        }
+                    </td>
+                    <td>
+                        <form asp-controller="Admin" asp-action="UpdateStatus" method="post">
+                            <input type="hidden" name="requestId" value="@item.RequestId" />
+
+                            <select name="newStatusId" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <option value="" disabled>-- Select Status --</option>
+                                @if (ViewBag.StatusList != null)
+                                {
+                                    @foreach (var status in ViewBag.StatusList)
+                                    {
+                                        <option value="@status.StatusId" selected="@(item.StatusId == status.StatusId ? "selected" : null)">
+                                            @status.StatusName
+                                        </option>
+                                    }
+                                }
+                            </select>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

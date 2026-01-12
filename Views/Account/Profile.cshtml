@@ -1,0 +1,174 @@
+﻿@model FPSample.Models.Entities.User
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white p-3">
+                    <h4 class="mb-0"><i class="bi bi-person-bounding-box"></i> Edit Profile Information</h4>
+                </div>
+                <div class="card-body p-4">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Profile" method="post">
+                        @* Hidden ID field is required for the database update logic *@
+                        <input type="hidden" asp-for="UserId" />
+
+                        <h5 class="text-primary border-bottom pb-2 mb-3">Full Name</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">First Name</label>
+                                <input asp-for="FirstName" class="form-control" placeholder="First Name" />
+                                <span asp-validation-for="FirstName" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Middle Name</label>
+                                <input asp-for="MiddleName" class="form-control" placeholder="Middle Name" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Last Name</label>
+                                <input asp-for="LastName" class="form-control" placeholder="Last Name" />
+                                <span asp-validation-for="LastName" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Suffix</label>
+                                <input asp-for="Suffix" class="form-control" placeholder="Jr., Sr., III" />
+                            </div>
+                        </div>
+
+                        <h5 class="text-primary border-bottom pb-2 mb-3">Personal Details</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Date of Birth</label>
+                                <input asp-for="DateOfBirth" type="date" class="form-control" id="dobInput" />
+                                <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">Sex</label>
+                                <select asp-for="Sex" class="form-select">
+                                    <option value="">-- Select --</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">Civil Status</label>
+                                <input asp-for="CivilStatus" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Religion</label>
+                                <input asp-for="Religion" class="form-control" />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">Age</label>
+                                @* Age is auto-calculated by JS but mapped to the model if needed *@
+                                <input id="ageDisplay" class="form-control bg-light" readonly placeholder="Auto" />
+                            </div>
+                        </div>
+
+                        <h5 class="text-primary border-bottom pb-2 mb-3">Address & Residency</h5>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">House # / Street</label>
+                                <input asp-for="HouseNoStreet" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Barangay</label>
+                                <input asp-for="Barangay" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">City</label>
+                                <input asp-for="City" class="form-control" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Province</label>
+                                <input asp-for="Province" class="form-control" />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">Stay (Years)</label>
+                                <input asp-for="StayYears" type="number" class="form-control" />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label fw-bold">Stay (Months)</label>
+                                <input asp-for="StayMonths" type="number" class="form-control" />
+                            </div>
+                        </div>
+
+                        <h5 class="text-primary border-bottom pb-2 mb-3">Contact & Checklist</h5>
+                        <div class="row g-3 mb-4 align-items-end">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold">Mobile Number</label>
+                                <input asp-for="ContactNo" class="form-control" />
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label fw-bold">Email Address</label>
+                                <input asp-for="Email" class="form-control" />
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check p-2 border rounded text-center shadow-sm">
+                                    <input asp-for="IsVoter" class="form-check-input ms-0" type="checkbox" id="voterCheck">
+                                    <label class="form-check-label fw-bold ms-2" for="voterCheck">Registered Voter</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="text-primary border-bottom pb-2 mb-3">Account Credentials</h5>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Username</label>
+                                <input asp-for="Username" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">New Password</label>
+                                <input asp-for="Password" type="password" class="form-control" placeholder="Leave blank to keep current password" value="" />
+                                <small class="text-muted">Only enter text here if you want to change your password.</small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 pt-3">
+                            <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary px-4">Cancel</a>
+                            <button type="submit" class="btn btn-success px-5 shadow-sm">Update All Information</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Automatic Age Calculation
+        const dobInput = document.getElementById('dobInput');
+        const ageDisplay = document.getElementById('ageDisplay');
+
+        function calculateAge() {
+            if (!dobInput.value) return;
+            const birthDate = new Date(dobInput.value);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            ageDisplay.value = age;
+        }
+
+        // Run on page load and on change
+        window.onload = calculateAge;
+        dobInput.addEventListener('change', calculateAge);
+    </script>
+}

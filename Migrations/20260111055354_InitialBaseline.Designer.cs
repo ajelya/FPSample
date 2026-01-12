@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FPSample.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    [Migration("20260110082216_InitialCreate_FixedDecimal")]
-    partial class InitialCreate_FixedDecimal
+    [Migration("20260111055354_InitialBaseline")]
+    partial class InitialBaseline
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -140,10 +140,16 @@ namespace FPSample.Migrations
                     b.Property<int>("ServiceId")
                         .HasColumnType("int");
 
+                    b.Property<int>("StatusId")
+                        .HasColumnType("int");
+
                     b.Property<TimeSpan>("TimeToClaim")
                         .HasColumnType("time");
 
-                    b.Property<int>("UserId")
+                    b.Property<string>("UploadPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("RequestId");
@@ -188,8 +194,9 @@ namespace FPSample.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("ContactNo")
-                        .HasColumnType("int");
+                    b.Property<string>("ContactNo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
@@ -214,7 +221,6 @@ namespace FPSample.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MiddleName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Password")
@@ -240,7 +246,6 @@ namespace FPSample.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Suffix")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Username")

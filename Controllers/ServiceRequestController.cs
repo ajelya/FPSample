@@ -1,24 +1,48 @@
-﻿using FPSample.Controllers.Data; 
+﻿using FPSample.Controllers.Data;
 using FPSample.Models.Entities;
-using Microsoft.AspNetCore.Http; // Required for Session
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace FPSample.Controllers
 {
     public class ServiceRequestController : Controller
     {
         private readonly ApplicationDBContext _context;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ServiceRequestController(ApplicationDBContext context)
+        public ServiceRequestController(ApplicationDBContext context, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
+            _webHostEnvironment = webHostEnvironment;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> MyRequests()
+        {
+            int? userId = HttpContext.Session.GetInt32("UserId");
+
+            if (userId == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            // FETCH DATA: We MUST include Histories and the Admin object 
+            // otherwise the view will display "Awaiting Review"
+            var myRequests = await _context.ServiceRequests
+                .Where(r => r.UserId == userId)
+                .Include(r => r.Histories)
+                    .ThenInclude(h => h.Admin)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+
+            return View(myRequests);
         }
 
         [HttpGet]
         public IActionResult Create()
         {
-            // 1. SECURITY LACK: Check if user is logged in
             if (HttpContext.Session.GetInt32("UserId") == null)
             {
                 return RedirectToAction("Login", "Account");
@@ -28,49 +52,45 @@ namespace FPSample.Controllers
             return View();
         }
 
-        [HttpGet]
-        public JsonResult GetPurposes(int serviceId)
-        {
-            var purposes = _context.ServicePurposes
-                .Where(p => p.ServiceId == serviceId && p.IsEnabled)
-                .Select(p => new {
-                    // JavaScript is case-sensitive; usually uses lowercase 'p'
-                    purposeId = p.PurposeId,
-                    purposeName = p.PurposeName
-                })
-                .ToList();
-            return Json(purposes);
-        }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ServiceRequest request)
         {
-            // 3. USER ID LACK: Get the logged-in ID from session
             int? loggedInUserId = HttpContext.Session.GetInt32("UserId");
 
-            if (loggedInUserId == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
+            if (loggedInUserId == null) return RedirectToAction("Login", "Account");
 
-            // 4. VALIDATION LACK: Tell C# to ignore UserId during validation 
-            // since we are assigning it manually below.
             ModelState.Remove("UserId");
+            ModelState.Remove("StatusId");
+            ModelState.Remove("UploadPath");
 
             if (ModelState.IsValid)
             {
-                request.UserId = loggedInUserId.Value; // Assign the ID from session
-                request.StatusId = 0;
+                if (request.ProfilePicture != null)
+                {
+                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads/ids");
+                    if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+                    string uniqueFileName = Guid.NewGuid().ToString() + "_" + request.ProfilePicture.FileName;
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await request.ProfilePicture.CopyToAsync(fileStream);
+                    }
+                    request.UploadPath = "/uploads/ids/" + uniqueFileName;
+                }
+
+                request.UserId = loggedInUserId.Value;
+                request.StatusId = 0; // Default to Pending
                 request.CreatedAt = DateTime.Now;
 
                 _context.ServiceRequests.Add(request);
                 await _context.SaveChangesAsync();
 
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("MyRequests");
             }
 
-            // 5. DATA CONSISTENCY LACK: Filter enabled services only even on error
             ViewBag.ServiceList = _context.Services.Where(s => s.IsEnabled).ToList();
             return View(request);
         }

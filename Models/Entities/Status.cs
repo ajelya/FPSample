@@ -5,7 +5,7 @@ namespace FPSample.Models.Entities
     public class Status
     {
         [Key]
-        public int Id { get; set; }
+        public int StatusId { get; set; }
         public string StatusName { get; set; }
     }
 }

@@ -1,0 +1,99 @@
+﻿@model IEnumerable<FPSample.Models.Entities.ServiceRequest>
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">My Service Requests</h4>
+            <a asp-action="Create" class="btn btn-light btn-sm">New Request</a>
+        </div>
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>Date Requested</th>
+                        <th>Claim Schedule</th>
+                        <th>Status</th>
+                        <th>Processed By</th>
+                        <th>ID Document</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@item.CreatedAt.ToString("MMM dd, yyyy")</td>
+                            <td>@item.DateToClaim.ToShortDateString() at @item.TimeToClaim</td>
+                            <td>
+                                @if (item.StatusId == 0)
+                                {
+                                    <span class="badge bg-secondary">Pending</span>
+                                }
+                                else if (item.StatusId == 1)
+                                {
+
+                                    <span class="badge bg-primary">Processing</span>
+                                }
+                                else if (item.StatusId == 2)
+                                {
+
+                                    <span class="badge bg-success">Approved</span>
+                                }
+                                else if (item.StatusId == 3)
+                                {
+
+                                    <span class="badge bg-info">Picked Up</span>
+                                }
+                                else if (item.StatusId == 4)
+                                {
+
+                                    <span class="badge bg-danger">Rejected</span>
+                                }
+                            </td>
+
+                            <td>
+                                @{
+                                    // Use .LastOrDefault() or OrderByDescending to get the most recent log
+                                    var latestAction = item.Histories?
+                                    .OrderByDescending(h => h.UpdatedAt)
+                                    .FirstOrDefault();
+                                }
+
+                                @if (latestAction != null && latestAction.Admin != null)
+                                {
+                                    <div class="d-flex flex-column">
+                                        <span class="fw-bold text-primary">
+                                            <i class="bi bi-person-badge"></i> @latestAction.Admin.Username
+                                        </span>
+                                        <small class="text-muted" style="font-size: 0.7rem;">
+                                            @latestAction.UpdatedAt.ToString("g")
+                                        </small>
+                                    </div>
+                                }
+                                else if (item.StatusId != 0 && latestAction == null)
+                                {
+                                    @* This handles cases where status was changed but no history row exists *@
+                                    <span class="text-warning small fst-italic">Processed (No Log)</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted fst-italic">Awaiting Review</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (!string.IsNullOrEmpty(item.UploadPath))
+                                {
+                                    <span class="text-success">✔ Uploaded</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">No File</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

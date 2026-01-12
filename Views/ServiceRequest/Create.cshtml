@@ -8,7 +8,8 @@
         <div class="card-body">
             <div asp-validation-summary="All" class="text-danger"></div>
 
-            <form asp-action="Create" method="post">
+            <form asp-action="Create" method="post" enctype="multipart/form-data">
+
                 <div class="mb-3">
                     <label>Select Service</label>
                     <select asp-for="ServiceId" id="serviceSelect" class="form-select">
@@ -30,6 +31,12 @@
                 <div class="mb-3" id="incomeField" style="display:none;">
                     <label class="text-danger fw-bold">Gross Annual Income (Required for Cedula)</label>
                     <input asp-for="GrossAnnualIncome" type="number" step="0.01" class="form-control" />
+                </div>
+
+                <div class="mb-3" id="photoUploadField" style="display:none;">
+                    <label class="text-info fw-bold">Upload 2x2 ID Picture (Required for Barangay ID)</label>
+                    <input type="file" name="ProfilePicture" class="form-control" accept="image/*" />
+                    <small class="text-muted">Format: JPG, PNG. Max size: 2MB</small>
                 </div>
 
                 <div class="row">
@@ -57,13 +64,23 @@
                 var sId = $(this).val();
                 var pSelect = $('#purposeSelect');
                 var incomeDiv = $('#incomeField');
+                var photoDiv = $('#photoUploadField');
 
-                // Show income field only if "Cedula" is selected
+                // Get selected text to check for specific services
                 var selectedText = $("#serviceSelect option:selected").text();
+
+                // Toggle Cedula Field
                 if (selectedText === "Cedula") {
                     incomeDiv.show();
                 } else {
                     incomeDiv.hide();
+                }
+
+                // Toggle Barangay ID Field
+                if (selectedText === "Barangay ID") {
+                    photoDiv.show();
+                } else {
+                    photoDiv.hide();
                 }
 
                 pSelect.empty().append('<option value="">-- Loading... --</option>');

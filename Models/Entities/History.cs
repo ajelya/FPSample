@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FPSample.Models.Entities
 {
@@ -9,6 +10,14 @@ namespace FPSample.Models.Entities
         public int RequestId { get; set; }
         public int AdminId { get; set; }
         public int StatusId { get; set; }
-        public DateTime UpdatedAt { get; set; } = DateTime.Now;
+        public DateTime UpdatedAt { get; set; }
+
+        // NAVIGATION PROPERTIES
+        [ForeignKey("RequestId")]
+        public virtual ServiceRequest ServiceRequest { get; set; }
+
+        // Make sure this points to the Admin model since that's what you use in Login
+        [ForeignKey("AdminId")]
+        public virtual Admin Admin { get; set; }
     }
 }
