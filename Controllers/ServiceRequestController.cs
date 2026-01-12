@@ -18,6 +18,7 @@ namespace FPSample.Controllers
             _webHostEnvironment = webHostEnvironment;
         }
 
+        // GET: ServiceRequest/MyRequests
         [HttpGet]
         public async Task<IActionResult> MyRequests()
         {
@@ -28,8 +29,7 @@ namespace FPSample.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // FETCH DATA: We MUST include Histories and the Admin object 
-            // otherwise the view will display "Awaiting Review"
+            // Fetch data: Include Histories and Admin for the status timeline
             var myRequests = await _context.ServiceRequests
                 .Where(r => r.UserId == userId)
                 .Include(r => r.Histories)
@@ -40,6 +40,7 @@ namespace FPSample.Controllers
             return View(myRequests);
         }
 
+        // GET: ServiceRequest/Create
         [HttpGet]
         public IActionResult Create()
         {
@@ -48,10 +49,29 @@ namespace FPSample.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            // Populate the dropdown for Services
             ViewBag.ServiceList = _context.Services.Where(s => s.IsEnabled).ToList();
             return View();
         }
 
+        // GET: ServiceRequest/GetPurposes?serviceId=X
+        // FIXED: Renamed anonymous object properties to match your JavaScript
+        [HttpGet]
+        public async Task<JsonResult> GetPurposes(int serviceId)
+        {
+            var purposes = await _context.ServicePurposes
+                .Where(p => p.ServiceId == serviceId)
+                .Select(p => new
+                {
+                    purposeId = p.PurposeId,   // JavaScript expects lowercase 'p'
+                    purposeName = p.PurposeName // JavaScript expects lowercase 'p'
+                })
+                .ToListAsync();
+
+            return Json(purposes);
+        }
+
+        // POST: ServiceRequest/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ServiceRequest request)
@@ -60,12 +80,14 @@ namespace FPSample.Controllers
 
             if (loggedInUserId == null) return RedirectToAction("Login", "Account");
 
+            // Remove non-user-input fields from validation
             ModelState.Remove("UserId");
             ModelState.Remove("StatusId");
             ModelState.Remove("UploadPath");
 
             if (ModelState.IsValid)
             {
+                // Handle File Upload for Barangay ID
                 if (request.ProfilePicture != null)
                 {
                     string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads/ids");
@@ -82,7 +104,7 @@ namespace FPSample.Controllers
                 }
 
                 request.UserId = loggedInUserId.Value;
-                request.StatusId = 0; // Default to Pending
+                request.StatusId = 0; // 0 = Pending
                 request.CreatedAt = DateTime.Now;
 
                 _context.ServiceRequests.Add(request);
@@ -91,6 +113,7 @@ namespace FPSample.Controllers
                 return RedirectToAction("MyRequests");
             }
 
+            // If we got here, something failed; reload the services for the view
             ViewBag.ServiceList = _context.Services.Where(s => s.IsEnabled).ToList();
             return View(request);
         }

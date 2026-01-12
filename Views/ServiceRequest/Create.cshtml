@@ -67,7 +67,7 @@
                 var photoDiv = $('#photoUploadField');
 
                 // Get selected text to check for specific services
-                var selectedText = $("#serviceSelect option:selected").text();
+                var selectedText = $("#serviceSelect option:selected").text().trim();
 
                 // Toggle Cedula Field
                 if (selectedText === "Cedula") {
@@ -83,14 +83,18 @@
                     photoDiv.hide();
                 }
 
+                // Clear purposes while loading
                 pSelect.empty().append('<option value="">-- Loading... --</option>');
 
                 if (sId) {
                     $.getJSON('/ServiceRequest/GetPurposes', { serviceId: sId }, function (data) {
                         pSelect.empty().append('<option value="">-- Select Purpose --</option>');
                         $.each(data, function (i, item) {
+                            // FIXED: C# JSON serialization turns PurposeId into purposeId
                             pSelect.append('<option value="' + item.purposeId + '">' + item.purposeName + '</option>');
                         });
+                    }).fail(function() {
+                        pSelect.empty().append('<option value="">-- Error loading purposes --</option>');
                     });
                 } else {
                     pSelect.empty().append('<option value="">-- Select Document First --</option>');

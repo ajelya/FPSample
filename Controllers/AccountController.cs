@@ -20,20 +20,22 @@ namespace FPSample.Controllers
 
         // --- LOGIN FEATURES ---
 
+        [HttpGet]
         public IActionResult Login() => View();
 
         [HttpPost]
-        public IActionResult Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (ModelState.IsValid)
             {
-                // Check Admin table
-                var admin = _context.Admins
-                    .FirstOrDefault(a => a.Username == model.Username && a.AdminPassword == model.Password);
+                // 1. Check Admin table first
+                var admin = await _context.Admins
+                    .FirstOrDefaultAsync(a => a.Username == model.Username && a.AdminPassword == model.Password);
 
                 if (admin != null)
                 {
                     HttpContext.Session.Clear();
+                    // We store AdminId and set Role to "Admin"
                     HttpContext.Session.SetInt32("AdminId", admin.AdminId);
                     HttpContext.Session.SetString("UserName", admin.Username);
                     HttpContext.Session.SetString("UserRole", "Admin");
@@ -41,13 +43,14 @@ namespace FPSample.Controllers
                     return RedirectToAction("Index", "Admin");
                 }
 
-                // Check User table
-                var user = _context.Users
-                    .FirstOrDefault(u => u.Username == model.Username && u.Password == model.Password);
+                // 2. Check User table if no admin was found
+                var user = await _context.Users
+                    .FirstOrDefaultAsync(u => u.Username == model.Username && u.Password == model.Password);
 
                 if (user != null)
                 {
                     HttpContext.Session.Clear();
+                    // We store UserId and set Role to "User"
                     HttpContext.Session.SetInt32("UserId", user.UserId);
                     HttpContext.Session.SetString("UserName", user.FirstName);
                     HttpContext.Session.SetString("UserRole", "User");
@@ -68,6 +71,7 @@ namespace FPSample.Controllers
             int? userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
             {
+                // If an admin tries to access 'Profile', send them to login or their own dashboard
                 return RedirectToAction("Login");
             }
 
