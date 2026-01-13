@@ -1,84 +1,140 @@
-﻿@model IEnumerable<FPSample.Models.Entities.ServiceRequest>
+﻿@model IEnumerable<dynamic>
 
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Admin Dashboard</h2>
-        <span class="badge bg-primary">Admin: @Context.Session.GetString("UserName")</span>
+        <div>
+            <h2 class="mb-0 text-dark fw-bold">Admin Dashboard</h2>
+            <p class="text-muted small">Manage resident service requests and available documents</p>
+        </div>
+        <div class="text-end">
+            <div class="d-flex gap-2 justify-content-end mb-2">
+                @* NAVIGATION BUTTONS *@
+                <a asp-action="Users" class="btn btn-primary shadow-sm">
+                    <i class="bi bi-people-fill me-2"></i>Manage Residents
+                </a>
+                <a asp-action="Services" class="btn btn-dark shadow-sm">
+                    <i class="bi bi-gear-fill me-2"></i>Manage Services
+                </a>
+            </div>
+            <span class="badge bg-light text-dark border p-2 d-block">
+                <i class="bi bi-person-circle me-1"></i> Admin: @Context.Session.GetString("UserName")
+            </span>
+        </div>
     </div>
 
-    <table class="table table-striped shadow-sm align-middle">
-        <thead class="table-dark">
-            <tr>
-                <th>Req #</th>
-                <th>Resident ID</th>
-                <th>Income</th>
-                <th>ID Photo</th>
-                <th>Current Status</th>
-                <th style="width: 200px;">Update Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>@item.RequestId</td>
-                    <td>@item.UserId</td>
-                    <td>@(item.GrossAnnualIncome.HasValue? item.GrossAnnualIncome.Value.ToString("N2") : "—")</td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(item.UploadPath))
-                        {
-                            <a href="@item.UploadPath" target="_blank">
-                                <img src="@item.UploadPath" width="50" class="img-thumbnail" />
-                            </a>
-                        }
-                    </td>
-                    <td>
-                        @* Visual indicator for current status *@
-                        @if (item.StatusId == 0)
-                        {
-                            <span class="badge bg-secondary">Pending</span>
-                        }
-                        else if (item.StatusId == 1)
-                        {
+    @* Statistics Cards *@
+    <div class="row g-3 mb-4 text-center">
+        @foreach (var stat in new[] {
+                new { Label = "Total Requests", Value = ViewBag.TotalRequests, Color = "bg-primary" },
+                new { Label = "Approved", Value = ViewBag.ApprovedRequests, Color = "bg-success" },
+                new { Label = "Picked Up", Value = ViewBag.PickedUpRequests, Color = "bg-info" },
+                new { Label = "Rejected", Value = ViewBag.RejectedRequests, Color = "bg-danger" }
+                })
+        {
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0 @stat.Color text-white h-100">
+                    <div class="card-body py-3">
+                        <h6 class="mb-1 small opacity-75">@stat.Label</h6>
+                        <h4 class="fw-bold mb-0">@stat.Value</h4>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 
-                            <span class="badge bg-primary">Processing</span>
-                        }
-                        else if (item.StatusId == 2)
+    @* Service Requests Table *@
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0 text-dark fw-bold"><i class="bi bi-file-earmark-text me-2"></i>Active Service Requests</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-3">Req #</th>
+                            <th>Resident Name</th>
+                            <th>Requested Document</th>
+                            <th class="text-center">ID Photo</th>
+                            <th>Current Status</th>
+                            <th class="pe-3 text-center">Update Status & Schedule</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
                         {
-
-                            <span class="badge bg-success">Approved</span>
-                        }
-                        else if (item.StatusId == 3)
-                        {
-
-                            <span class="badge bg-info">Picked Up</span>
-                        }
-                        else if (item.StatusId == 4)
-                        {
-
-                            <span class="badge bg-danger">Rejected</span>
-                        }
-                    </td>
-                    <td>
-                        <form asp-controller="Admin" asp-action="UpdateStatus" method="post">
-                            <input type="hidden" name="requestId" value="@item.RequestId" />
-
-                            <select name="newStatusId" class="form-select form-select-sm" onchange="this.form.submit()">
-                                <option value="" disabled>-- Select Status --</option>
-                                @if (ViewBag.StatusList != null)
-                                {
-                                    @foreach (var status in ViewBag.StatusList)
+                            <tr>
+                                <td class="ps-3"><strong>#@item.Request.RequestId</strong></td>
+                                <td>
+                                    <div class="fw-bold">@item.ResidentName</div>
+                                    <span class="badge @(item.User.IsActive ? "text-success" : "text-danger") p-0 small">
+                                        ● @(item.User.IsActive ? "Active" : "Disabled")
+                                    </span>
+                                </td>
+                                <td>
+                                    @* This pulls dynamically from your Services table via the Controller *@
+                                    <span class="badge bg-light text-primary border">@item.RequestedDocument</span>
+                                </td>
+                                <td class="text-center">
+                                    @if (!string.IsNullOrEmpty(item.Request.UploadPath))
                                     {
-                                        <option value="@status.StatusId" selected="@(item.StatusId == status.StatusId ? "selected" : null)">
-                                            @status.StatusName
-                                        </option>
+                                        <a href="@item.Request.UploadPath" target="_blank">
+                                            <img src="@item.Request.UploadPath" width="40" height="40" class="rounded border shadow-sm" style="object-fit: cover;" />
+                                        </a>
                                     }
-                                }
-                            </select>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                                    else
+                                    {
+                                        <span class="text-muted small">No Image</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @{
+                                        var badge = item.Request.StatusId switch { 2 => "bg-success", 3 => "bg-info", 4 => "bg-danger", _ => "bg-secondary" };
+                                    }
+                                    <span class="badge rounded-pill @badge text-uppercase" style="font-size: 0.65rem;">@item.CurrentStatusName</span>
+
+                                    @if (item.Request.DateToClaim != default(DateTime))
+                                    {
+                                        var combinedDateTime = item.Request.DateToClaim.Date.Add(item.Request.TimeToClaim);
+                                        <div class="small text-muted mt-1" style="font-size: 0.7rem;">
+                                            <i class="bi bi-calendar-event"></i>
+                                            @combinedDateTime.ToString("MMM dd 'at' hh:mm tt")
+                                        </div>
+                                    }
+                                </td>
+
+                                <td class="pe-3">
+                                    <form asp-action="UpdateStatus" method="post" class="d-flex flex-column gap-1">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="requestId" value="@item.Request.RequestId" />
+
+                                        <div class="input-group input-group-sm">
+                                            <select name="newStatusId" class="form-select" style="min-width: 120px;">
+                                                @foreach (var status in ViewBag.StatusList)
+                                                {
+                                                    <option value="@status.StatusId" selected="@(item.Request.StatusId == status.StatusId ? "selected" : null)">
+                                                        @status.StatusName
+                                                    </option>
+                                                }
+                                            </select>
+                                        </div>
+
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text"><i class="bi bi-clock"></i></span>
+                                            <input type="datetime-local" name="pickupSchedule" class="form-control"
+                                                   value="@(item.Request.DateToClaim == default(DateTime) ? "" : item.Request.DateToClaim.Date.Add(item.Request.TimeToClaim).ToString("yyyy-MM-ddTHH:mm"))" />
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="bi bi-check-lg"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>

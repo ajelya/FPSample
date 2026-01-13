@@ -9,5 +9,7 @@ namespace FPSample.Models.Entities
         public string PurposeName { get; set; }
         public int ServiceId { get; set; } 
         public bool IsEnabled { get; set; } = true;
+        public virtual Service? Service { get; set; }
+
     }
 }

@@ -1,0 +1,171 @@
+﻿@model IEnumerable<FPSample.Models.Entities.Service>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0 text-dark fw-bold">Document Services</h2>
+            <p class="text-muted small">Manage available documents and their purposes for residents</p>
+        </div>
+        <button class="btn btn-primary shadow-sm" onclick="openServiceModal(0, '', '', [])">
+            <i class="bi bi-plus-circle me-2"></i>Add New Service
+        </button>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="ps-3">Service Name</th>
+                        <th>Description</th>
+                        <th>Available Purposes</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center pe-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model)
+                    {
+                        <tr>
+                            <td class="ps-3"><strong>@s.ServiceName</strong></td>
+                            <td class="text-muted small" style="max-width: 250px;">@s.Description</td>
+                            <td>
+                                @if (s.ServicePurposes != null && s.ServicePurposes.Any())
+                                {
+                                    @foreach (var p in s.ServicePurposes)
+                                    {
+                                        <span class="badge bg-light text-dark border me-1">@p.PurposeName</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted small italic">No purposes defined</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <span class="badge @(s.IsEnabled ? "bg-success" : "bg-danger")">
+                                    @(s.IsEnabled ? "Enabled" : "Disabled")
+                                </span>
+                            </td>
+                            <td class="pe-3">
+                                <div class="d-flex justify-content-center gap-2">
+                                    <button class="btn btn-sm btn-outline-primary"
+                                            onclick="openServiceModal(@s.ServiceId, '@s.ServiceName', '@s.Description', @Json.Serialize(s.ServicePurposes.Select(p => p.PurposeName)))"
+                                            title="Edit Service">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+
+                                    <form asp-action="ToggleServiceStatus" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@s.ServiceId" />
+                                        <button type="submit" class="btn btn-sm @(s.IsEnabled ? "btn-warning" : "btn-success")"
+                                                style="width: 85px;">
+                                            @(s.IsEnabled ? "Disable" : "Enable")
+                                        </button>
+                                    </form>
+
+                                    <form asp-action="DeleteService" method="post" class="d-inline"
+                                          onsubmit="return confirm('Are you sure? This will also delete all associated purposes.');">
+                                        <input type="hidden" name="id" value="@s.ServiceId" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* Modal for Add/Edit *@
+<div class="modal fade" id="serviceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="UpsertService" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Service Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="ServiceId" id="modalServiceId" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Service Name</label>
+                        <input type="text" name="ServiceName" id="modalServiceName" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Description</label>
+                        <textarea name="Description" id="modalDescription" class="form-control" rows="2"></textarea>
+                    </div>
+
+                    <hr />
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label fw-bold mb-0">Purposes</label>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="addPurposeInput('')">
+                            <i class="bi bi-plus"></i> Add Purpose
+                        </button>
+                    </div>
+                    <div id="purposeContainer">
+                    </div>
+                    <small class="text-muted">Residents will choose from these options when requesting this document.</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function addPurposeInput(value) {
+            const container = document.getElementById('purposeContainer');
+            const div = document.createElement('div');
+            div.className = 'input-group mb-2';
+            div.innerHTML = `
+                <input type="text" name="Purposes" class="form-control" value="${value}" placeholder="e.g. Scholarship" required />
+                <button type="button" class="btn btn-outline-danger" onclick="this.parentElement.remove()">
+                    <i class="bi bi-x"></i>
+                </button>
+            `;
+            container.appendChild(div);
+        }
+
+        function openServiceModal(id, name, desc, purposes) {
+            document.getElementById('modalServiceId').value = id;
+            document.getElementById('modalServiceName').value = name;
+            document.getElementById('modalDescription').value = desc;
+
+            // Clear and rebuild purpose inputs
+            const container = document.getElementById('purposeContainer');
+            container.innerHTML = '';
+
+            if (purposes && purposes.length > 0) {
+                purposes.forEach(p => addPurposeInput(p));
+            } else if (id === 0) {
+                // Add one empty row for new services
+                addPurposeInput('');
+            }
+
+            document.getElementById('modalTitle').innerText = (id === 0) ? "Add New Service" : "Edit Service";
+
+            var myModal = new bootstrap.Modal(document.getElementById('serviceModal'));
+            myModal.show();
+        }
+    </script>
+}

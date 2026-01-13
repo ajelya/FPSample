@@ -16,6 +16,5 @@ namespace FPSample.Controllers.Data
         public DbSet<ServicePurpose> ServicePurposes { get; set; }
         public DbSet<Service> Services { get; set; }
 
-
     }
 }

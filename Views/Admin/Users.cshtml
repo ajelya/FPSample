@@ -1,0 +1,53 @@
+﻿<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="fw-bold">@user.LastName, @user.FirstName @user.Suffix</div>
+                            <small class="text-muted">@user.Email</small>
+                        </td>
+                        <td>
+                            <small>@user.HouseNoStreet, @user.Barangay, @user.City</small>
+                        </td>
+                        <td>@user.ContactNo</td>
+                        <td>
+                            @if (user.IsActive)
+                            {
+                                <span class="badge bg-success-subtle text-success px-3">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger-subtle text-danger px-3">Inactive</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group">
+                                <a asp-action="ViewProfile" asp-route-id="@user.UserId" class="btn btn-sm btn-outline-secondary">View</a>
+
+                                <a asp-action="EditUser" asp-route-id="@user.UserId" class="btn btn-sm btn-outline-primary ms-1">Edit</a>
+
+                                <form asp-action="ToggleUserStatus" asp-route-id="@user.UserId" method="post" onsubmit="return confirm('Change user status?');" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm @(user.IsActive ? "btn-outline-danger" : "btn-outline-success") ms-1">
+                                        @(user.IsActive ? "Deactivate" : "Activate")
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

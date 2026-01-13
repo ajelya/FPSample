@@ -27,7 +27,7 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
 
-                        @* 1. Public Links: Shown only when NO ONE is logged in *@
+                        @* 1. Public Links *@
                         @if (Context.Session.GetInt32("UserId") == null && Context.Session.GetInt32("AdminId") == null)
                         {
                             <li class="nav-item">
@@ -35,7 +35,7 @@
                             </li>
                         }
 
-                        @* 2. Resident Links: Shown only to regular Users *@
+                        @* 2. Resident Links *@
                         @if (Context.Session.GetInt32("UserId") != null)
                         {
                             <li class="nav-item">
@@ -46,33 +46,37 @@
                             </li>
                         }
 
-                        @* 3. Admin Links: Shown only to Admins *@
+                        @* 3. Admin Links *@
                         @if (Context.Session.GetString("UserRole") == "Admin")
                         {
                             <li class="nav-item">
                                 <a class="nav-link text-danger fw-bold" asp-controller="Admin" asp-action="Index">ADMIN DASHBOARD</a>
                             </li>
+                            @* New link for Services Management *@
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="Services">Manage Services</a>
+                            </li>
                         }
                     </ul>
 
-                    @* 4. Right-Side: Profile and Logout (UPDATED SECTION) *@
+                    @* 4. Right-Side: Profile and Logout *@
                     <ul class="navbar-nav">
                         @if (Context.Session.GetString("UserName") != null)
                         {
                             <li class="nav-item">
                                 @if (Context.Session.GetInt32("UserId") != null)
                                 {
-                                    @* For Residents: Name is a link to the Profile Edit page *@
+                                    @* For Residents *@
                                     <a class="nav-link text-primary fw-bold" asp-controller="Account" asp-action="Profile" title="Edit Profile">
                                         <i class="bi bi-person-circle"></i> Hello, @Context.Session.GetString("UserName")!
                                     </a>
                                 }
                                 else
                                 {
-                                    @* For Admins: Keep as plain text *@
-                                    <span class="nav-link text-muted">
-                                        <i class="bi bi-shield-lock"></i> Admin: @Context.Session.GetString("UserName")
-                                    </span>
+                                    @* MODIFIED FOR ADMINS: Admin name now links to Change Password *@
+                                    <a class="nav-link text-dark fw-bold" asp-controller="Admin" asp-action="ChangePassword" title="Change Password">
+                                        <i class="bi bi-shield-lock-fill text-warning"></i> Admin: @Context.Session.GetString("UserName")
+                                    </a>
                                 }
                             </li>
                             <li class="nav-item">

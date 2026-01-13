@@ -22,7 +22,28 @@
                     {
                         <tr>
                             <td>@item.CreatedAt.ToString("MMM dd, yyyy")</td>
-                            <td>@item.DateToClaim.ToShortDateString() at @item.TimeToClaim</td>
+
+                            <td>
+                                @* Check if the admin has set a date (not the default 0001-01-01) *@
+                                @if (item.DateToClaim != default(DateTime))
+                                {
+                                    <div class="fw-bold text-dark">
+                                        <i class="bi bi-calendar-check text-primary"></i>
+                                        @item.DateToClaim.ToString("MMM dd, yyyy")
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock"></i>
+                                        @DateTime.Today.Add(item.TimeToClaim).ToString("hh:mm tt")
+                                    </small>
+                                }
+                                else
+                                {
+                                    <span class="badge rounded-pill bg-light text-secondary border">
+                                        <i class="bi bi-hourglass-split"></i> Awaiting Admin
+                                    </span>
+                                }
+                            </td>
+
                             <td>
                                 @if (item.StatusId == 0)
                                 {
@@ -30,29 +51,24 @@
                                 }
                                 else if (item.StatusId == 1)
                                 {
-
                                     <span class="badge bg-primary">Processing</span>
                                 }
                                 else if (item.StatusId == 2)
                                 {
-
-                                    <span class="badge bg-success">Approved</span>
+                                    <span class="badge bg-success">Approved / Ready</span>
                                 }
                                 else if (item.StatusId == 3)
                                 {
-
                                     <span class="badge bg-info">Picked Up</span>
                                 }
                                 else if (item.StatusId == 4)
                                 {
-
                                     <span class="badge bg-danger">Rejected</span>
                                 }
                             </td>
 
                             <td>
                                 @{
-                                    // Use .LastOrDefault() or OrderByDescending to get the most recent log
                                     var latestAction = item.Histories?
                                     .OrderByDescending(h => h.UpdatedAt)
                                     .FirstOrDefault();
@@ -69,10 +85,9 @@
                                         </small>
                                     </div>
                                 }
-                                else if (item.StatusId != 0 && latestAction == null)
+                                else if (item.StatusId != 0)
                                 {
-                                    @* This handles cases where status was changed but no history row exists *@
-                                    <span class="text-warning small fst-italic">Processed (No Log)</span>
+                                    <span class="text-warning small fst-italic">Processed</span>
                                 }
                                 else
                                 {
@@ -83,7 +98,7 @@
                             <td>
                                 @if (!string.IsNullOrEmpty(item.UploadPath))
                                 {
-                                    <span class="text-success">✔ Uploaded</span>
+                                    <span class="text-success"><i class="bi bi-file-earmark-image"></i> Uploaded</span>
                                 }
                                 else
                                 {

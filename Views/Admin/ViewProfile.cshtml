@@ -1,0 +1,29 @@
+﻿@model FPSample.Models.Entities.User
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Resident Profile</h5>
+        </div>
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-4 text-center border-end">
+                    <div class="display-1 text-muted"><i class="bi bi-person-circle"></i></div>
+                    <h4 class="mt-2">@Model.FirstName @Model.LastName</h4>
+                    <span class="badge @(Model.IsActive ? "bg-success" : "bg-danger")">
+                        @(Model.IsActive ? "Active" : "Deactivated")
+                    </span>
+                </div>
+                <div class="col-md-8 px-4">
+                    <p><strong>User ID:</strong> #@Model.UserId</p>
+                    <p><strong>Email:</strong> @Model.Email</p>
+    
+                    <div class="mt-4">
+                        <a asp-action="Index" class="btn btn-secondary">Back</a>
+                        <a asp-action="EditUser" asp-route-id="@Model.UserId" class="btn btn-warning">Edit Information</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
