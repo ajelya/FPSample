@@ -1,110 +1,109 @@
 ﻿@model IEnumerable<FPSample.Models.Entities.ServiceRequest>
+@{
+    ViewData["Title"] = "My Document Requests";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
 
-<div class="container mt-4">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">My Service Requests</h4>
-            <a asp-action="Create" class="btn btn-light btn-sm">New Request</a>
+<div class="dashboard-wrapper">
+    <div class="main-card-container">
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-heading mb-0">My Document Requests</h2>
+            <a asp-action="Create" class="btn-green-action px-4" style="text-decoration:none;">
+                + New Request
+            </a>
         </div>
-        <div class="card-body">
-            <table class="table table-hover align-middle">
+
+        <div class="table-responsive">
+            <table class="table custom-table align-middle">
                 <thead>
                     <tr>
                         <th>Date Requested</th>
+                        <th>Document Requested</th>
                         <th>Claim Schedule</th>
                         <th>Status</th>
                         <th>Processed By</th>
-                        <th>ID Document</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model)
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="text-muted">@item.CreatedAt.ToString("MMM dd, yyyy")</td>
+
+                                @* DYNAMIC FIX: Fetches the ServiceName from the DB automatically *@
+                                <td class="fw-bold text-dark">
+                                    <i class="bi bi-file-earmark-text text-success me-1"></i>
+                                    @if (item.Service != null)
+                                    {
+                                        @* This pulls the name the Admin typed in the Services table *@
+                                        @item.Service.ServiceName
+                                    }
+                                    else
+                                    {
+                                        @* Fallback: Only shows if the ServiceId doesn't exist in the Services table *@
+                                        <span class="text-muted">Service #@item.ServiceId</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (item.DateToClaim != default(DateTime))
+                                    {
+                                        <div class="fw-bold text-dark">
+                                            <i class="bi bi-calendar-check text-success"></i>
+                                            @item.DateToClaim.ToString("MMM dd, yyyy")
+                                        </div>
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock"></i>
+                                            @DateTime.Today.Add(item.TimeToClaim).ToString("hh:mm tt")
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge badge-awaiting">
+                                            <i class="bi bi-hourglass-split"></i> Awaiting Admin
+                                        </span>
+                                    }
+                                </td>
+
+                                <td>
+                                    <span class="status-badge @GetStatusClass(item.StatusId)">
+                                        @GetStatusText(item.StatusId)
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @{
+                                        var latestAction = item.Histories?
+                                        .OrderByDescending(h => h.UpdatedAt)
+                                        .FirstOrDefault();
+                                    }
+
+                                    @if (latestAction != null && latestAction.Admin != null)
+                                    {
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold text-success" style="font-size:0.9rem;">
+                                                <i class="bi bi-person-badge"></i> @latestAction.Admin.Username
+                                            </span>
+                                            <small class="text-muted" style="font-size: 0.75rem;">
+                                                @latestAction.UpdatedAt.ToString("g")
+                                            </small>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted fst-italic small">Awaiting Review</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
                     {
                         <tr>
-                            <td>@item.CreatedAt.ToString("MMM dd, yyyy")</td>
-
-                            <td>
-                                @* Check if the admin has set a date (not the default 0001-01-01) *@
-                                @if (item.DateToClaim != default(DateTime))
-                                {
-                                    <div class="fw-bold text-dark">
-                                        <i class="bi bi-calendar-check text-primary"></i>
-                                        @item.DateToClaim.ToString("MMM dd, yyyy")
-                                    </div>
-                                    <small class="text-muted">
-                                        <i class="bi bi-clock"></i>
-                                        @DateTime.Today.Add(item.TimeToClaim).ToString("hh:mm tt")
-                                    </small>
-                                }
-                                else
-                                {
-                                    <span class="badge rounded-pill bg-light text-secondary border">
-                                        <i class="bi bi-hourglass-split"></i> Awaiting Admin
-                                    </span>
-                                }
-                            </td>
-
-                            <td>
-                                @if (item.StatusId == 0)
-                                {
-                                    <span class="badge bg-secondary">Pending</span>
-                                }
-                                else if (item.StatusId == 1)
-                                {
-                                    <span class="badge bg-primary">Processing</span>
-                                }
-                                else if (item.StatusId == 2)
-                                {
-                                    <span class="badge bg-success">Approved / Ready</span>
-                                }
-                                else if (item.StatusId == 3)
-                                {
-                                    <span class="badge bg-info">Picked Up</span>
-                                }
-                                else if (item.StatusId == 4)
-                                {
-                                    <span class="badge bg-danger">Rejected</span>
-                                }
-                            </td>
-
-                            <td>
-                                @{
-                                    var latestAction = item.Histories?
-                                    .OrderByDescending(h => h.UpdatedAt)
-                                    .FirstOrDefault();
-                                }
-
-                                @if (latestAction != null && latestAction.Admin != null)
-                                {
-                                    <div class="d-flex flex-column">
-                                        <span class="fw-bold text-primary">
-                                            <i class="bi bi-person-badge"></i> @latestAction.Admin.Username
-                                        </span>
-                                        <small class="text-muted" style="font-size: 0.7rem;">
-                                            @latestAction.UpdatedAt.ToString("g")
-                                        </small>
-                                    </div>
-                                }
-                                else if (item.StatusId != 0)
-                                {
-                                    <span class="text-warning small fst-italic">Processed</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted fst-italic">Awaiting Review</span>
-                                }
-                            </td>
-
-                            <td>
-                                @if (!string.IsNullOrEmpty(item.UploadPath))
-                                {
-                                    <span class="text-success"><i class="bi bi-file-earmark-image"></i> Uploaded</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">No File</span>
-                                }
-                            </td>
+                            <td colspan="5" class="text-center py-5 text-muted">No requests found.</td>
                         </tr>
                     }
                 </tbody>
@@ -112,3 +111,117 @@
         </div>
     </div>
 </div>
+
+@functions {
+    public string GetStatusClass(int statusId) => statusId switch
+    {
+        0 => "badge-pending",
+        1 => "badge-processing",
+        2 => "badge-approved",
+        3 => "badge-ready",
+        4 => "badge-rejected",
+        _ => "badge-secondary"
+    };
+
+    public string GetStatusText(int statusId) => statusId switch
+    {
+        0 => "Pending",
+        1 => "Processing",
+        2 => "Approved",
+        3 => "Picked Up",
+        4 => "Rejected",
+        _ => "Unknown"
+    };
+}
+
+<style>
+    .dashboard-wrapper {
+        padding: 50px;
+        background-color: #f4f8f5 !important;
+        min-height: 100vh;
+    }
+
+    .main-card-container {
+        background: white;
+        padding: 45px;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.06);
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .section-heading {
+        color: #43A047;
+        font-weight: 700;
+        font-size: 32px;
+    }
+
+    .custom-table thead th {
+        background-color: #f8faf9;
+        color: #43A047;
+        font-weight: 700;
+        border-bottom: 2px solid #eef2f0;
+        padding: 18px 15px;
+        font-size: 15px;
+    }
+
+    .custom-table tbody td {
+        padding: 20px 15px;
+        border-bottom: 1px solid #f2f2f2;
+        font-size: 15px;
+    }
+
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+
+    .badge-pending {
+        background-color: #e9ecef;
+        color: #495057;
+    }
+
+    .badge-processing {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .badge-approved {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .badge-ready {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+
+    .badge-rejected {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .badge-awaiting {
+        background-color: #fdfdfe;
+        color: #adb5bd;
+        border: 1px solid #dee2e6;
+    }
+
+    .btn-green-action {
+        background-color: #43A047;
+        color: white !important;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+        .btn-green-action:hover {
+            background-color: #388E3C;
+            transform: translateY(-2px);
+        }
+</style>

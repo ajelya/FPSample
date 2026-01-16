@@ -4,6 +4,7 @@ using FPSample.Models.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -18,67 +19,130 @@ namespace FPSample.Controllers
             _context = context;
         }
 
-        // --- LOGIN FEATURES ---
-
+        // ================= LOGIN =================
         [HttpGet]
-        public IActionResult Login() => View();
+        public IActionResult Login()
+        {
+            if (HttpContext.Session.GetString("UserRole") != null) return RedirectToAction("Home");
+            return View();
+        }
 
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (ModelState.IsValid)
             {
-                // 1. Check Admin table first
+                // Check Admin Table
                 var admin = await _context.Admins
                     .FirstOrDefaultAsync(a => a.Username == model.Username && a.AdminPassword == model.Password);
 
                 if (admin != null)
                 {
                     HttpContext.Session.Clear();
-                    // We store AdminId and set Role to "Admin"
                     HttpContext.Session.SetInt32("AdminId", admin.AdminId);
                     HttpContext.Session.SetString("UserName", admin.Username);
                     HttpContext.Session.SetString("UserRole", "Admin");
-
                     return RedirectToAction("Index", "Admin");
                 }
 
-                // 2. Check User table if no admin was found
+                // Check User Table
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Username == model.Username && u.Password == model.Password);
 
                 if (user != null)
                 {
                     HttpContext.Session.Clear();
-                    // We store UserId and set Role to "User"
                     HttpContext.Session.SetInt32("UserId", user.UserId);
                     HttpContext.Session.SetString("UserName", user.FirstName);
                     HttpContext.Session.SetString("UserRole", "User");
-
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Home", "Account");
                 }
-
                 ModelState.AddModelError("", "Invalid username or password.");
             }
             return View(model);
         }
 
-        // --- PROFILE EDIT FEATURES ---
+        // ================= SIGNUP =================
+        [HttpGet]
+        public IActionResult Signup() => View();
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Signup(User model, string confirmPassword)
+        {
+            if (model.Password != confirmPassword)
+            {
+                ModelState.AddModelError("", "Passwords do not match.");
+            }
+
+            ModelState.Remove("Role");
+            ModelState.Remove("IsActive");
+            ModelState.Remove("ServiceRequests");
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    bool userExists = await _context.Users.AnyAsync(u => u.Username == model.Username);
+                    if (userExists)
+                    {
+                        ModelState.AddModelError("Username", "Username is already taken.");
+                        return View(model);
+                    }
+
+                    model.IsActive = true;
+                    _context.Users.Add(model);
+                    await _context.SaveChangesAsync();
+
+                    TempData["Success"] = "Account created successfully!";
+                    return RedirectToAction("Login");
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Database Error: " + (ex.InnerException?.Message ?? ex.Message));
+                }
+            }
+            return View(model);
+        }
+
+        // ================= USER PAGES =================
+        public IActionResult Home()
+        {
+            if (HttpContext.Session.GetString("UserRole") != "User") return RedirectToAction("Login");
+            return View();
+        }
+
+        /// <summary>
+        /// Fetches all service requests for the logged-in user.
+        /// Uses Eager Loading (.Include) to ensure service names reflect dynamically.
+        /// </summary>
+        public async Task<IActionResult> MyRequests()
+        {
+            if (HttpContext.Session.GetString("UserRole") != "User") return RedirectToAction("Login");
+
+            int? userId = HttpContext.Session.GetInt32("UserId");
+
+            // We include 'Service' (the navigation property) to get the ServiceName 
+            // from the Services table automatically.
+            var requests = await _context.ServiceRequests
+                                 .Include(r => r.Service)
+                                 .Include(r => r.Histories)
+                                    .ThenInclude(h => h.Admin)
+                                 .Where(r => r.UserId == userId)
+                                 .OrderByDescending(r => r.CreatedAt)
+                                 .AsNoTracking()
+                                 .ToListAsync();
+
+            return View("~/Views/ServiceRequest/MyRequests.cshtml", requests);
+        }
 
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
             int? userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null)
-            {
-                // If an admin tries to access 'Profile', send them to login or their own dashboard
-                return RedirectToAction("Login");
-            }
-
+            if (userId == null) return RedirectToAction("Login");
             var user = await _context.Users.FindAsync(userId);
-            if (user == null) return NotFound();
-
-            return View(user);
+            return user == null ? NotFound() : View(user);
         }
 
         [HttpPost]
@@ -88,67 +152,45 @@ namespace FPSample.Controllers
             int? userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Login");
 
-            // Security check to ensure user is editing their own data
-            if (updatedUser.UserId != userId) return Forbid();
-
-            // Allow profile update without changing password
-            if (string.IsNullOrEmpty(updatedUser.Password))
-            {
-                ModelState.Remove("Password");
-            }
+            if (string.IsNullOrEmpty(updatedUser.Password)) ModelState.Remove("Password");
 
             if (ModelState.IsValid)
             {
                 var userInDb = await _context.Users.FindAsync(userId);
                 if (userInDb != null)
                 {
-                    // Update Name Information
+                    // Update user fields
                     userInDb.FirstName = updatedUser.FirstName;
                     userInDb.MiddleName = updatedUser.MiddleName;
                     userInDb.LastName = updatedUser.LastName;
                     userInDb.Suffix = updatedUser.Suffix;
-
-                    // Update Personal Details
                     userInDb.DateOfBirth = updatedUser.DateOfBirth;
                     userInDb.Sex = updatedUser.Sex;
                     userInDb.CivilStatus = updatedUser.CivilStatus;
                     userInDb.Religion = updatedUser.Religion;
-
-                    // Update Address & Residency
                     userInDb.HouseNoStreet = updatedUser.HouseNoStreet;
                     userInDb.Barangay = updatedUser.Barangay;
                     userInDb.City = updatedUser.City;
                     userInDb.Province = updatedUser.Province;
                     userInDb.StayYears = updatedUser.StayYears;
                     userInDb.StayMonths = updatedUser.StayMonths;
-
-                    // Update Contact & Voter Info
+                    userInDb.IsVoter = updatedUser.IsVoter;
                     userInDb.ContactNo = updatedUser.ContactNo;
                     userInDb.Email = updatedUser.Email;
-                    userInDb.IsVoter = updatedUser.IsVoter;
-
-                    // Update Account Credentials
                     userInDb.Username = updatedUser.Username;
 
-                    if (!string.IsNullOrEmpty(updatedUser.Password))
-                    {
-                        userInDb.Password = updatedUser.Password;
-                    }
+                    if (!string.IsNullOrEmpty(updatedUser.Password)) userInDb.Password = updatedUser.Password;
 
                     _context.Update(userInDb);
                     await _context.SaveChangesAsync();
 
-                    // Refresh Session name in case FirstName changed
                     HttpContext.Session.SetString("UserName", userInDb.FirstName);
-
-                    TempData["Success"] = "Your profile has been updated successfully!";
+                    TempData["Success"] = "Profile Updated Successfully!";
                     return RedirectToAction("Profile");
                 }
             }
             return View(updatedUser);
         }
-
-        // --- LOGOUT ---
 
         public IActionResult Logout()
         {

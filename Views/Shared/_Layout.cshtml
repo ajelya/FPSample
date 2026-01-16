@@ -1,111 +1,131 @@
-﻿@using Microsoft.AspNetCore.Http
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Barangay System</title>
+    <title>@ViewData["Title"] - iAssist</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/FPSample.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            overflow-x: hidden;
+            background-color: #f4f7f6;
+        }
+
+        #wrapper {
+            display: flex;
+            width: 100%;
+        }
+
+        /* The Green Sidebar from your screenshot */
+        #sidebar-wrapper {
+            min-height: 100vh;
+            width: 250px;
+            background-color: #41a34d; /* Matches the green in your image */
+            transition: all 0.3s ease;
+            position: fixed;
+        }
+
+        .sidebar-heading {
+            padding: 2rem 1.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+        }
+
+        /* Sidebar Navigation Links */
+        .list-group-item {
+            background-color: transparent !important;
+            color: rgba(255, 255, 255, 0.8) !important;
+            border: none !important;
+            padding: 15px 30px !important;
+            font-size: 1.1rem;
+        }
+
+            .list-group-item:hover {
+                color: white !important;
+                background-color: rgba(255, 255, 255, 0.1) !important;
+            }
+
+            /* Active link styling */
+            .list-group-item.active {
+                color: white !important;
+                font-weight: bold;
+            }
+
+        /* Main Content area to the right of sidebar */
+        #page-content-wrapper {
+            width: 100%;
+            margin-left: 250px; /* Same as sidebar width */
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logout-container {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            padding: 0 20px;
+        }
+
+        .btn-logout {
+            background-color: white;
+            color: #41a34d;
+            font-weight: bold;
+            border-radius: 8px;
+            width: 100%;
+            border: none;
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand fw-bold" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-house-door"></i> BarangayPortal
+
+    <div id="wrapper">
+        <div id="sidebar-wrapper">
+            <div class="sidebar-heading">iAssist</div>
+            <div class="list-group list-group-flush">
+                <a asp-controller="Account" asp-action="Home"
+                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "Home" ? "active" : "")">
+                    Home
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-
-                        @* 1. Public Links *@
-                        @if (Context.Session.GetInt32("UserId") == null && Context.Session.GetInt32("AdminId") == null)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="User" asp-action="Register">Register</a>
-                            </li>
-                        }
-
-                        @* 2. Resident Links *@
-                        @if (Context.Session.GetInt32("UserId") != null)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="ServiceRequest" asp-action="Create">Request Document</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark fw-bold" asp-controller="ServiceRequest" asp-action="MyRequests">My History</a>
-                            </li>
-                        }
-
-                        @* 3. Admin Links *@
-                        @if (Context.Session.GetString("UserRole") == "Admin")
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-danger fw-bold" asp-controller="Admin" asp-action="Index">ADMIN DASHBOARD</a>
-                            </li>
-                            @* New link for Services Management *@
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="Services">Manage Services</a>
-                            </li>
-                        }
-                    </ul>
-
-                    @* 4. Right-Side: Profile and Logout *@
-                    <ul class="navbar-nav">
-                        @if (Context.Session.GetString("UserName") != null)
-                        {
-                            <li class="nav-item">
-                                @if (Context.Session.GetInt32("UserId") != null)
-                                {
-                                    @* For Residents *@
-                                    <a class="nav-link text-primary fw-bold" asp-controller="Account" asp-action="Profile" title="Edit Profile">
-                                        <i class="bi bi-person-circle"></i> Hello, @Context.Session.GetString("UserName")!
-                                    </a>
-                                }
-                                else
-                                {
-                                    @* MODIFIED FOR ADMINS: Admin name now links to Change Password *@
-                                    <a class="nav-link text-dark fw-bold" asp-controller="Admin" asp-action="ChangePassword" title="Change Password">
-                                        <i class="bi bi-shield-lock-fill text-warning"></i> Admin: @Context.Session.GetString("UserName")
-                                    </a>
-                                }
-                            </li>
-                            <li class="nav-item">
-                                <a class="btn btn-outline-danger btn-sm mt-1 ms-2" asp-controller="Account" asp-action="Logout">Logout</a>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="btn btn-primary btn-sm mt-1" asp-controller="Account" asp-action="Login">Login</a>
-                            </li>
-                        }
-                    </ul>
-                </div>
+                <a asp-controller="ServiceRequest" asp-action="Create"
+                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "Create" ? "active" : "")">
+                    Request Service
+                </a>
+                <a asp-controller="ServiceRequest" asp-action="MyRequests"
+                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "MyRequests" ? "active" : "")">
+                    View Requests
+                </a>
+                <a asp-controller="Account" asp-action="Profile"
+                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "Profile" ? "active" : "")">
+                    My Profile
+                </a>
             </div>
-        </nav>
-    </header>
 
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container text-center">
-            &copy; 2026 - Barangay Service Portal - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
+            <div class="logout-container">
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    <button type="submit" class="btn btn-logout">Logout</button>
+                </form>
+            </div>
         </div>
-    </footer>
+
+        <div id="page-content-wrapper">
+            <div class="container-fluid p-4">
+                @RenderBody()
+            </div>
+
+            <footer class="mt-auto py-3 bg-white border-top text-center">
+                <div class="container text-muted">
+                    &copy; 2026 iAssist
+                </div>
+            </footer>
+        </div>
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

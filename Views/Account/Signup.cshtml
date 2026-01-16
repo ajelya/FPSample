@@ -1,0 +1,195 @@
+﻿@model FPSample.Models.Entities.User
+@{
+    ViewData["Title"] = "Signup";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signup - iAssist</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        body {
+            background-color: #f4f8f5;
+            font-family: 'Inter', sans-serif;
+            padding: 40px 0;
+        }
+
+        .signup-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            color: #43A047;
+            font-weight: 700;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+        }
+
+        .btn-signup {
+            background-color: #43A047;
+            color: white;
+            font-weight: 600;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            width: 100%;
+            transition: 0.3s;
+        }
+
+            .btn-signup:hover {
+                background-color: #388E3C;
+                color: white;
+            }
+
+        label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #555;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-card">
+        <h1 class="text-center mb-2">Create Account</h1>
+        <p class="text-center text-muted mb-4">Barangay Services Request System</p>
+
+        <form asp-action="Signup" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+            @* Automatic system values *@
+            <input type="hidden" asp-for="IsActive" value="true" />
+
+
+            <h4 class="section-title">Personal Information</h4>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label asp-for="LastName">Last Name</label>
+                    <input asp-for="LastName" class="form-control" required />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="FirstName">First Name</label>
+                    <input asp-for="FirstName" class="form-control" required />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="MiddleName">Middle Name</label>
+                    <input asp-for="MiddleName" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Suffix">Suffix</label>
+                    <input asp-for="Suffix" class="form-control" />
+                </div>
+            </div>
+
+            <div class="row g-3 mt-1">
+                <div class="col-md-3">
+                    <label asp-for="DateOfBirth">Date of Birth</label>
+                    <input asp-for="DateOfBirth" type="date" class="form-control" required />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Sex">Sex</label>
+                    <select asp-for="Sex" class="form-control" required>
+                        <option value="">Select</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="CivilStatus">Civil Status</label>
+                    <input asp-for="CivilStatus" class="form-control" required />
+                </div>
+                <div class="col-md-3">
+                    <label asp-for="Religion">Religion</label>
+                    <input asp-for="Religion" class="form-control" required />
+                </div>
+            </div>
+
+            <h4 class="section-title mt-4">Address & Residency</h4>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="HouseNoStreet">House # / Street</label>
+                    <input asp-for="HouseNoStreet" class="form-control" required />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Barangay">Barangay</label>
+                    <input asp-for="Barangay" class="form-control" required />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="City">City</label>
+                    <input asp-for="City" class="form-control" required />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Province">Province</label>
+                    <input asp-for="Province" class="form-control" required />
+                </div>
+                <div class="col-md-2">
+                    <label asp-for="StayYears">Stay (Years)</label>
+                    <input asp-for="StayYears" type="number" class="form-control" min="0" required />
+                </div>
+                <div class="col-md-2">
+                    <label asp-for="StayMonths">Stay (Months)</label>
+                    <input asp-for="StayMonths" type="number" class="form-control" min="0" max="11" required />
+                </div>
+                <div class="col-md-4">
+                    <label>Registered Voter?</label>
+                    <select asp-for="IsVoter" class="form-control" required>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                    </select>
+                </div>
+            </div>
+
+            <h4 class="section-title mt-4">Contact Information</h4>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="ContactNo">Contact Number</label>
+                    <input asp-for="ContactNo" class="form-control" required />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="Email">Email Address</label>
+                    <input asp-for="Email" type="email" class="form-control" required />
+                </div>
+            </div>
+
+            <h4 class="section-title mt-4">Account Security</h4>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="Username">Username</label>
+                    <input asp-for="Username" class="form-control" required />
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Password">Password</label>
+                    <input asp-for="Password" type="password" class="form-control" required />
+                </div>
+                <div class="col-md-4">
+                    <label>Confirm Password</label>
+                    <input name="confirmPassword" type="password" class="form-control" required />
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-signup mt-4">Sign Up</button>
+
+            <p class="text-center mt-3">
+                Already have an account?
+                <a asp-action="Login" style="color:#43A047; font-weight:600;">Login</a>
+            </p>
+        </form>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+</body>
+</html>

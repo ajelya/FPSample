@@ -1,7 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-
+using Microsoft.AspNetCore.Http;
 
 namespace FPSample.Models.Entities
 {
@@ -10,10 +11,12 @@ namespace FPSample.Models.Entities
         [Key]
         public int RequestId { get; set; }
         public int? UserId { get; set; }
+
+        // This links to the 'ServiceId' in your Services table
         public int ServiceId { get; set; }
         public int PurposeId { get; set; }
 
-        [Column(TypeName ="decimal(18,2)")]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal? GrossAnnualIncome { get; set; }
         public int StatusId { get; set; } = 0;
         public DateTime DateToClaim { get; set; }
@@ -22,12 +25,16 @@ namespace FPSample.Models.Entities
         [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        // Add or verify this property for the ID Photo
         public string? UploadPath { get; set; }
 
-        // Add this to handle the file upload in the form (not saved in DB)
         [NotMapped]
         public IFormFile? ProfilePicture { get; set; }
+
+        // NAVIGATION PROPERTY
+        // This MUST be named 'Service' to match the .Include(r => r.Service) in the controller
+        [ForeignKey("ServiceId")]
+        public virtual Service Service { get; set; }
+
         public virtual ICollection<History> Histories { get; set; } = new List<History>();
     }
 }

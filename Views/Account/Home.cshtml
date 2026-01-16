@@ -1,0 +1,177 @@
+﻿@model FPSample.Models.Entities.User
+@{
+    ViewData["Title"] = "Home";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="dashboard-wrapper">
+    <div class="main-card-container">
+        <h2 class="section-heading">Our Services</h2>
+
+        <div class="services-row">
+            @* Service 1 *@
+            <div class="service-box">
+                <div class="icon-placeholder">📄</div>
+                <h4>Barangay Clearance</h4>
+                <p class="service-description">
+                    Official document issued for employment, business, or local identification requirements.
+                </p>
+            </div>
+
+            @* Service 2 *@
+            <div class="service-box">
+                <div class="icon-placeholder">📝</div>
+                <h4>Barangay Certificate</h4>
+                <p class="service-description">
+                    Certification of residency or indigency for various legal and social service purposes.
+                </p>
+            </div>
+
+            @* Service 3 *@
+            <div class="service-box">
+                <div class="icon-placeholder">💳</div>
+                <h4>Cedula</h4>
+                <p class="service-description">
+                    Community Tax Certificate required for notarization and government transactions.
+                </p>
+            </div>
+
+            @* Service 4 *@
+            <div class="service-box">
+                <div class="icon-placeholder">🆔</div>
+                <h4>Barangay ID</h4>
+                <p class="service-description">
+                    Official neighborhood identification card for residents of this barangay.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-card-container mt-4">
+        <h2 class="section-heading">Quick Links</h2>
+        <div class="links-row">
+            <a asp-controller="Account" asp-action="MyRequests" class="btn-outline-large">
+                <i class="bi bi-clock-history me-2"></i> Request History
+            </a>
+
+            <a asp-controller="Account" asp-action="Profile" class="btn-outline-large">
+                <i class="bi bi-person-circle me-2"></i> Update Profile
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background-color: #f4f8f5 !important;
+        margin: 0;
+    }
+
+    .dashboard-wrapper {
+        padding: 40px;
+        margin-left: 20px;
+    }
+
+    .main-card-container {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+
+    .section-heading {
+        color: #43A047;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 40px;
+        font-size: 32px;
+    }
+
+    .services-row {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        gap: 15px;
+        width: 100%;
+    }
+
+    .service-box {
+        background: white;
+        border: 1px solid #f0f0f0;
+        border-radius: 15px;
+        padding: 25px 15px;
+        flex: 1;
+        min-width: 180px;
+        text-align: center;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+        transition: transform 0.2s ease-in-out, border-color 0.2s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+        .service-box:hover {
+            transform: translateY(-5px);
+            border-color: #43A047;
+        }
+
+    .icon-placeholder {
+        font-size: 40px;
+        margin-bottom: 15px;
+    }
+
+    .service-box h4 {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #333;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Description Styling */
+    .service-description {
+        font-size: 13.5px;
+        color: #666;
+        line-height: 1.5;
+        margin-bottom: 0;
+        /* Keeps cards aligned if descriptions have different lengths */
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .links-row {
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
+        justify-content: center;
+    }
+
+    .btn-outline-large {
+        flex: 1;
+        max-width: 500px;
+        text-align: center;
+        padding: 18px;
+        border: 2px solid #43A047;
+        color: #333 !important;
+        text-decoration: none;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+        .btn-outline-large:hover {
+            background-color: #43A047;
+            color: white !important;
+            transform: scale(1.02);
+        }
+</style>

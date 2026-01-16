@@ -1,11 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using FPSample.Controllers.Data; // Ensure this matches your namespace
+using FPSample.Controllers.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // --- 1. SERVICES SECTION ---
 
-// Add Session Services
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
@@ -35,13 +34,15 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// UseSession MUST be between UseRouting and UseEndpoints/MapControllerRoute
+// Session must be used before Authorization
 app.UseSession();
 
 app.UseAuthorization();
 
+// --- MODIFY THIS PART ---
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    // Changed controller from 'Home' to 'Account' and action from 'Index' to 'Login'
+    pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();
