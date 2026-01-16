@@ -2,6 +2,11 @@
 using FPSample.Models.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace FPSample.Controllers
 {
@@ -14,20 +19,36 @@ namespace FPSample.Controllers
             _context = context;
         }
 
-        // --- DASHBOARD ---
+        // --- HELPER: CHECK ADMIN ACCESS ---
+        private bool IsNotAdmin() => HttpContext.Session.GetString("UserRole") != "Admin";
+
+        // --- DASHBOARD (Summaries Only) ---
         public async Task<IActionResult> Index()
         {
-            if (HttpContext.Session.GetString("UserRole") != "Admin")
-                return RedirectToAction("Login", "Account");
+            if (IsNotAdmin()) return RedirectToAction("Login", "Account");
 
-            ViewBag.TotalUsers = await _context.Users.CountAsync();
-            ViewBag.TotalRequests = await _context.ServiceRequests.CountAsync();
-            ViewBag.ApprovedRequests = await _context.ServiceRequests.CountAsync(r => r.StatusId == 2);
-            ViewBag.RejectedRequests = await _context.ServiceRequests.CountAsync(r => r.StatusId == 4);
-            ViewBag.PickedUpRequests = await _context.ServiceRequests.CountAsync(r => r.StatusId == 3);
+            var viewModel = new AdminDashboardVM
+            {
+                TotalUsers = await _context.Users.CountAsync(),
+                TotalRequests = await _context.ServiceRequests.CountAsync(),
+                ApprovedRequests = await _context.ServiceRequests.CountAsync(r => r.StatusId == 2),
+                ReadyToClaim = await _context.ServiceRequests.CountAsync(r => r.StatusId == 3),
+                RejectedRequests = await _context.ServiceRequests.CountAsync(r => r.StatusId == 4),
+                // We leave ActiveRequests empty here to declutter the dashboard
+                ActiveRequests = new List<dynamic>()
+            };
+
+            return View(viewModel);
+        }
+
+        // --- NEW: DEDICATED SERVICE REQUESTS PAGE ---
+        public async Task<IActionResult> ActiveRequests()
+        {
+            if (IsNotAdmin()) return RedirectToAction("Login", "Account");
+
             ViewBag.StatusList = await _context.Statuses.ToListAsync();
-
             var allServices = await _context.Services.ToListAsync();
+
             var rawRequests = await (from req in _context.ServiceRequests
                                      join u in _context.Users on req.UserId equals u.UserId into userGroup
                                      from user in userGroup.DefaultIfEmpty()
@@ -39,9 +60,10 @@ namespace FPSample.Controllers
                                          User = user,
                                          ResidentName = user != null ? user.FirstName + " " + user.LastName : "Unknown",
                                          CurrentStatusName = status != null ? status.StatusName : "Pending"
-                                     }).ToListAsync();
+                                     }).OrderByDescending(r => r.Request.RequestId).ToListAsync();
 
-            var requestsData = rawRequests.Select(item => new {
+            var requestsData = rawRequests.Select(item => (dynamic)new
+            {
                 item.Request,
                 item.User,
                 item.ResidentName,
@@ -54,54 +76,116 @@ namespace FPSample.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateStatus(int requestId, int newStatusId, DateTime? pickupSchedule)
+        public async Task<IActionResult> UpdateStatus(int requestId, int newStatusId, DateTime? claimDate, TimeSpan? claimTime)
         {
+            if (IsNotAdmin()) return RedirectToAction("Login", "Account");
+
             var request = await _context.ServiceRequests.FindAsync(requestId);
             int? adminId = HttpContext.Session.GetInt32("AdminId");
 
-            if (request != null && adminId != null)
+            if (request != null)
             {
                 request.StatusId = newStatusId;
-                if (pickupSchedule.HasValue)
+                if (claimDate.HasValue) request.DateToClaim = claimDate.Value;
+                if (claimTime.HasValue) request.TimeToClaim = claimTime.Value;
+
+                if (adminId != null)
                 {
-                    request.DateToClaim = pickupSchedule.Value.Date;
-                    request.TimeToClaim = pickupSchedule.Value.TimeOfDay;
+                    _context.Histories.Add(new History
+                    {
+                        RequestId = requestId,
+                        AdminId = adminId.Value,
+                        StatusId = newStatusId,
+                        UpdatedAt = DateTime.Now
+                    });
                 }
-                _context.Histories.Add(new History
-                {
-                    RequestId = requestId,
-                    AdminId = adminId.Value,
-                    StatusId = newStatusId,
-                    UpdatedAt = DateTime.Now
-                });
+
                 await _context.SaveChangesAsync();
-                TempData["Success"] = "Status updated.";
+                TempData["Success"] = $"Request #{requestId} updated successfully.";
             }
-            return RedirectToAction(nameof(Index));
+
+            // Redirect back to ActiveRequests instead of Index
+            return RedirectToAction(nameof(ActiveRequests));
         }
 
-        // --- USER MANAGEMENT ---
-        public async Task<IActionResult> Users(string searchString)
+        // --- RESIDENT MANAGEMENT ---
+        public async Task<IActionResult> Users(string searchTerm)
         {
-            var usersQuery = _context.Users.AsQueryable();
-            if (!string.IsNullOrEmpty(searchString))
-                usersQuery = usersQuery.Where(u => u.FirstName.Contains(searchString) || u.LastName.Contains(searchString));
+            if (IsNotAdmin()) return RedirectToAction("Login", "Account");
 
-            return View(await usersQuery.OrderByDescending(u => u.UserId).ToListAsync());
+            var usersQuery = _context.Users.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                string lowerSearch = searchTerm.ToLower();
+                usersQuery = usersQuery.Where(u =>
+                    u.FirstName.ToLower().Contains(lowerSearch) ||
+                    u.LastName.ToLower().Contains(lowerSearch) ||
+                    u.Email.ToLower().Contains(lowerSearch) ||
+                    u.ContactNo.Contains(lowerSearch));
+            }
+
+            ViewData["CurrentFilter"] = searchTerm;
+            var result = await usersQuery.OrderByDescending(u => u.UserId).ToListAsync();
+            return View(result);
+        }
+
+        public async Task<IActionResult> ViewProfile(int id)
+        {
+            if (IsNotAdmin()) return RedirectToAction("Login", "Account");
+
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound();
+
+            return View("ViewProfile", user);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditUser(int id)
+        {
+            if (IsNotAdmin()) return RedirectToAction("Login", "Account");
+
+            var user = await _context.Users.FindAsync(id);
+            if (user == null) return NotFound();
+
+            return View(user);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditUser(User updatedUser)
+        {
+            if (IsNotAdmin()) return RedirectToAction("Login", "Account");
+
+            if (ModelState.IsValid)
+            {
+                _context.Update(updatedUser);
+                await _context.SaveChangesAsync();
+                TempData["Success"] = "Resident information updated.";
+                return RedirectToAction(nameof(Users));
+            }
+            return View(updatedUser);
         }
 
         [HttpPost]
         public async Task<IActionResult> ToggleUserStatus(int id)
         {
+            if (IsNotAdmin()) return RedirectToAction("Login", "Account");
+
             var user = await _context.Users.FindAsync(id);
-            if (user != null) { user.IsActive = !user.IsActive; await _context.SaveChangesAsync(); }
+            if (user != null)
+            {
+                user.IsActive = !user.IsActive;
+                await _context.SaveChangesAsync();
+                TempData["Success"] = $"User {(user.IsActive ? "Activated" : "Deactivated")} successfully.";
+            }
             return RedirectToAction(nameof(Users));
         }
 
-        // --- SERVICE & PURPOSE MANAGEMENT ---
+        // --- SERVICE MANAGEMENT ---
         public async Task<IActionResult> Services()
         {
-            // The .Include fixes the error by loading the child purposes
+            if (IsNotAdmin()) return RedirectToAction("Login", "Account");
             var services = await _context.Services.Include(s => s.ServicePurposes).ToListAsync();
             return View(services);
         }
@@ -110,7 +194,8 @@ namespace FPSample.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpsertService(int? ServiceId, string ServiceName, string Description, List<string> Purposes)
         {
-            if (string.IsNullOrEmpty(ServiceName)) return BadRequest("Name required.");
+            if (IsNotAdmin()) return RedirectToAction("Login", "Account");
+            if (string.IsNullOrEmpty(ServiceName)) return BadRequest("Service Name is required.");
 
             Service service;
             if (ServiceId == null || ServiceId == 0)
@@ -126,15 +211,13 @@ namespace FPSample.Controllers
                 service.ServiceName = ServiceName;
                 service.Description = Description;
 
-                // Remove old purposes to refresh them
                 if (service.ServicePurposes != null)
                     _context.ServicePurposes.RemoveRange(service.ServicePurposes);
             }
 
-            await _context.SaveChangesAsync(); // Saves the service and clears old purposes
+            await _context.SaveChangesAsync();
 
-            // Add new purposes
-            if (Purposes != null)
+            if (Purposes != null && Purposes.Any())
             {
                 foreach (var p in Purposes.Where(x => !string.IsNullOrWhiteSpace(x)))
                 {
@@ -147,7 +230,7 @@ namespace FPSample.Controllers
                 await _context.SaveChangesAsync();
             }
 
-            TempData["Success"] = "Service and Purposes saved.";
+            TempData["Success"] = "Service details saved.";
             return RedirectToAction(nameof(Services));
         }
 
@@ -155,7 +238,11 @@ namespace FPSample.Controllers
         public async Task<IActionResult> ToggleServiceStatus(int id)
         {
             var service = await _context.Services.FindAsync(id);
-            if (service != null) { service.IsEnabled = !service.IsEnabled; await _context.SaveChangesAsync(); }
+            if (service != null)
+            {
+                service.IsEnabled = !service.IsEnabled;
+                await _context.SaveChangesAsync();
+            }
             return RedirectToAction(nameof(Services));
         }
 
@@ -168,41 +255,46 @@ namespace FPSample.Controllers
                 if (service.ServicePurposes != null) _context.ServicePurposes.RemoveRange(service.ServicePurposes);
                 _context.Services.Remove(service);
                 await _context.SaveChangesAsync();
-                TempData["Success"] = "Permanently deleted.";
             }
             return RedirectToAction(nameof(Services));
         }
-        // --- ADMIN PROFILE / PASSWORD MANAGEMENT ---
 
+        // --- ADMIN OWN PROFILE SETTINGS ---
         [HttpGet]
-        public IActionResult ChangePassword()
+        public async Task<IActionResult> AdminProfile()
         {
-            if (HttpContext.Session.GetString("UserRole") != "Admin")
-                return RedirectToAction("Login", "Account");
+            if (IsNotAdmin()) return RedirectToAction("Login", "Account");
 
-            return View();
+            var adminId = HttpContext.Session.GetInt32("AdminId");
+            if (adminId == null) return RedirectToAction("Login", "Account");
+
+            var admin = await _context.Admins.FindAsync(adminId);
+            if (admin == null) return RedirectToAction("Logout", "Account");
+
+            return View("AdminProfile", admin);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(string currentPassword, string newPassword, string confirmPassword)
         {
+            if (IsNotAdmin()) return RedirectToAction("Login", "Account");
+
             var adminId = HttpContext.Session.GetInt32("AdminId");
-            if (adminId == null) return RedirectToAction("Login", "Account");
+            var admin = await _context.Admins.FindAsync(adminId);
+
+            if (admin == null) return NotFound();
+
+            if (admin.AdminPassword != currentPassword)
+            {
+                TempData["Error"] = "Incorrect current password.";
+                return RedirectToAction(nameof(AdminProfile));
+            }
 
             if (newPassword != confirmPassword)
             {
-                ModelState.AddModelError("", "New password and confirmation do not match.");
-                return View();
-            }
-
-            // Fetch the admin record (Assuming your Admin entity is in _context.Admins)
-            var admin = await _context.Admins.FindAsync(adminId);
-
-            if (admin == null || admin.AdminPassword != currentPassword) // In production, use password hashing!
-            {
-                ModelState.AddModelError("", "Current password is incorrect.");
-                return View();
+                TempData["Error"] = "New passwords do not match.";
+                return RedirectToAction(nameof(AdminProfile));
             }
 
             admin.AdminPassword = newPassword;
@@ -210,7 +302,7 @@ namespace FPSample.Controllers
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Password updated successfully.";
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(AdminProfile));
         }
     }
 }

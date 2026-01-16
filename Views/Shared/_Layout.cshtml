@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Http
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -7,6 +8,8 @@
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @* Bootstrap Icons *@
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <style>
         body {
@@ -19,13 +22,14 @@
             width: 100%;
         }
 
-        /* The Green Sidebar from your screenshot */
+        /* The Green Sidebar */
         #sidebar-wrapper {
             min-height: 100vh;
             width: 250px;
-            background-color: #41a34d; /* Matches the green in your image */
+            background-color: #41a34d;
             transition: all 0.3s ease;
             position: fixed;
+            z-index: 1000;
         }
 
         .sidebar-heading {
@@ -34,6 +38,7 @@
             font-weight: bold;
             color: white;
             text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         /* Sidebar Navigation Links */
@@ -41,9 +46,17 @@
             background-color: transparent !important;
             color: rgba(255, 255, 255, 0.8) !important;
             border: none !important;
-            padding: 15px 30px !important;
-            font-size: 1.1rem;
+            padding: 15px 25px !important;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.2s;
         }
+
+            .list-group-item i {
+                font-size: 1.2rem;
+            }
 
             .list-group-item:hover {
                 color: white !important;
@@ -53,13 +66,15 @@
             /* Active link styling */
             .list-group-item.active {
                 color: white !important;
+                background-color: rgba(255, 255, 255, 0.2) !important;
                 font-weight: bold;
+                border-left: 4px solid white !important;
             }
 
-        /* Main Content area to the right of sidebar */
+        /* Main Content area */
         #page-content-wrapper {
             width: 100%;
-            margin-left: 250px; /* Same as sidebar width */
+            margin-left: 250px;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -80,6 +95,23 @@
             width: 100%;
             border: none;
             padding: 10px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+            .btn-logout:hover {
+                background-color: #f8f9fa;
+                transform: translateY(-2px);
+                color: #2d7a38;
+            }
+
+        /* Custom Alert Styling */
+        .alert {
+            border-radius: 12px;
+            border: none;
         }
     </style>
 </head>
@@ -89,39 +121,95 @@
         <div id="sidebar-wrapper">
             <div class="sidebar-heading">iAssist</div>
             <div class="list-group list-group-flush">
-                <a asp-controller="Account" asp-action="Home"
-                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "Home" ? "active" : "")">
-                    Home
-                </a>
-                <a asp-controller="ServiceRequest" asp-action="Create"
-                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "Create" ? "active" : "")">
-                    Request Service
-                </a>
-                <a asp-controller="ServiceRequest" asp-action="MyRequests"
-                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "MyRequests" ? "active" : "")">
-                    View Requests
-                </a>
-                <a asp-controller="Account" asp-action="Profile"
-                   class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "Profile" ? "active" : "")">
-                    My Profile
-                </a>
+
+                @if (Context.Session.GetString("UserRole") == "Admin")
+                {
+                    @* 1. Dashboard *@
+                    <a asp-controller="Admin" asp-action="Index"
+                       class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" && ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" ? "active" : "")">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+
+                    @* 2. NEW: Service Requests (Relocated from Dashboard) *@
+                    <a asp-controller="Admin" asp-action="ActiveRequests"
+                       class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "ActiveRequests" ? "active" : "")">
+                        <i class="bi bi-file-earmark-text"></i> Service Requests
+                    </a>
+
+                    @* 3. Manage Residents *@
+                    <a asp-controller="Admin" asp-action="Users"
+                       class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "Users" || ViewContext.RouteData.Values["Action"]?.ToString() == "ViewProfile" ? "active" : "")">
+                        <i class="bi bi-people"></i> Manage Residents
+                    </a>
+
+                    @* 4. Barangay Services (Setting up types of documents) *@
+                    <a asp-controller="Admin" asp-action="Services"
+                       class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "Services" ? "active" : "")">
+                        <i class="bi bi-shield-check"></i> Barangay Services
+                    </a>
+
+                    @* 5. Admin Settings *@
+                    <a asp-controller="Admin" asp-action="AdminProfile"
+                       class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "AdminProfile" ? "active" : "")">
+                        <i class="bi bi-person-badge"></i> Admin Profile
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Home"
+                       class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "Home" ? "active" : "")">
+                        <i class="bi bi-house-door"></i> Home
+                    </a>
+                    <a asp-controller="ServiceRequest" asp-action="Create"
+                       class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "Create" ? "active" : "")">
+                        <i class="bi bi-file-earmark-plus"></i> Request Service
+                    </a>
+                    <a asp-controller="ServiceRequest" asp-action="MyRequests"
+                       class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "MyRequests" ? "active" : "")">
+                        <i class="bi bi-clock-history"></i> View Requests
+                    </a>
+                    <a asp-controller="Account" asp-action="Profile"
+                       class="list-group-item list-group-item-action @(ViewContext.RouteData.Values["Action"]?.ToString() == "Profile" ? "active" : "")">
+                        <i class="bi bi-person-circle"></i> My Profile
+                    </a>
+                }
             </div>
 
             <div class="logout-container">
                 <form asp-controller="Account" asp-action="Logout" method="post">
-                    <button type="submit" class="btn btn-logout">Logout</button>
+                    <button type="submit" class="btn btn-logout shadow-sm">
+                        <i class="bi bi-box-arrow-left"></i> Logout
+                    </button>
                 </form>
             </div>
         </div>
 
         <div id="page-content-wrapper">
-            <div class="container-fluid p-4">
+            <main role="main" class="container-fluid p-4">
+
+                @* --- Notification Alerts --- *@
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
+                        <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
                 @RenderBody()
-            </div>
+            </main>
 
             <footer class="mt-auto py-3 bg-white border-top text-center">
                 <div class="container text-muted">
-                    &copy; 2026 iAssist
+                    &copy; 2026 iAssist - Barangay Management System
                 </div>
             </footer>
         </div>
@@ -130,6 +218,18 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        // Smoothly hide alerts after 4 seconds
+        $(document).ready(function () {
+            window.setTimeout(function() {
+                $(".alert").fadeTo(500, 0).slideUp(500, function(){
+                    $(this).remove();
+                });
+            }, 4000);
+        });
+    </script>
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

@@ -1,140 +1,216 @@
-﻿@model IEnumerable<dynamic>
+﻿@model FPSample.Models.Entities.AdminDashboardVM
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="dashboard-container">
+    @* --- HEADER SECTION --- *@
+    <div class="header-section d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="mb-0 text-dark fw-bold">Admin Dashboard</h2>
-            <p class="text-muted small">Manage resident service requests and available documents</p>
-        </div>
-        <div class="text-end">
-            <div class="d-flex gap-2 justify-content-end mb-2">
-                @* NAVIGATION BUTTONS *@
-                <a asp-action="Users" class="btn btn-primary shadow-sm">
-                    <i class="bi bi-people-fill me-2"></i>Manage Residents
-                </a>
-                <a asp-action="Services" class="btn btn-dark shadow-sm">
-                    <i class="bi bi-gear-fill me-2"></i>Manage Services
-                </a>
-            </div>
-            <span class="badge bg-light text-dark border p-2 d-block">
-                <i class="bi bi-person-circle me-1"></i> Admin: @Context.Session.GetString("UserName")
-            </span>
+            <h2 class="fw-bold text-dark">Mabuhay, Barangay Malanday!</h2>
+            <p class="text-muted">Maligayang pagbabalik, kaibigan</p>
         </div>
     </div>
 
-    @* Statistics Cards *@
-    <div class="row g-3 mb-4 text-center">
-        @foreach (var stat in new[] {
-                new { Label = "Total Requests", Value = ViewBag.TotalRequests, Color = "bg-primary" },
-                new { Label = "Approved", Value = ViewBag.ApprovedRequests, Color = "bg-success" },
-                new { Label = "Picked Up", Value = ViewBag.PickedUpRequests, Color = "bg-info" },
-                new { Label = "Rejected", Value = ViewBag.RejectedRequests, Color = "bg-danger" }
-                })
-        {
-            <div class="col-md-3">
-                <div class="card shadow-sm border-0 @stat.Color text-white h-100">
-                    <div class="card-body py-3">
-                        <h6 class="mb-1 small opacity-75">@stat.Label</h6>
-                        <h4 class="fw-bold mb-0">@stat.Value</h4>
-                    </div>
+    @* --- STATS SECTION --- *@
+    <div class="stats-grid mb-5">
+        <div class="stat-card">
+            <div class="icon-wrapper bg-primary-light"><i class="bi bi-people-fill text-primary"></i></div>
+            <p class="stat-label">Total Registered Users</p>
+            <h2 class="stat-value text-dark">@Model.TotalUsers</h2>
+            <small class="stat-update">Last update: @DateTime.Now.ToString("dd MMM yyyy")</small>
+        </div>
+        <div class="stat-card">
+            <div class="icon-wrapper bg-light"><i class="bi bi-file-earmark-text text-secondary"></i></div>
+            <p class="stat-label">Total Service Request</p>
+            <h2 class="stat-value text-dark">@Model.TotalRequests</h2>
+            <small class="stat-update">Last update: @DateTime.Now.ToString("dd MMM yyyy")</small>
+        </div>
+        <div class="stat-card border-success">
+            <div class="icon-wrapper bg-success-light border border-success"><i class="bi bi-check-circle text-success"></i></div>
+            <p class="stat-label">Approved Requests</p>
+            <h2 class="stat-value text-success">@Model.ApprovedRequests</h2>
+            <small class="stat-update">Last update: @DateTime.Now.ToString("dd MMM yyyy")</small>
+        </div>
+        <div class="stat-card border-danger">
+            <div class="icon-wrapper bg-danger-light border border-danger"><i class="bi bi-x-circle text-danger"></i></div>
+            <p class="stat-label">Rejected Requests</p>
+            <h2 class="stat-value text-danger">@Model.RejectedRequests</h2>
+            <small class="stat-update">Last update: @DateTime.Now.ToString("dd MMM yyyy")</small>
+        </div>
+        <div class="stat-card border-info">
+            <div class="icon-wrapper bg-info-light border border-info"><i class="bi bi-folder-check text-info"></i></div>
+            <p class="stat-label">Ready to Claim</p>
+            <h2 class="stat-value text-info">@Model.ReadyToClaim</h2>
+            <small class="stat-update">Last update: @DateTime.Now.ToString("dd MMM yyyy")</small>
+        </div>
+    </div>
+
+    @* --- FOLDERS & CHART SECTION --- *@
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center mb-4">
+                <i class="bi bi-folder2-open fs-4 me-2 text-success"></i>
+                <h4 class="fw-bold mb-0 text-dark">Barangay Documents</h4>
+            </div>
+            <div class="documents-grid">
+                <div class="doc-folder">
+                    <i class="bi bi-folder-fill"></i>
+                    <span class="text-dark fw-bold">Barangay Clearance</span>
+                </div>
+                <div class="doc-folder">
+                    <i class="bi bi-folder-fill"></i>
+                    <span class="text-dark fw-bold">Barangay Certificate</span>
+                </div>
+                <div class="doc-folder">
+                    <i class="bi bi-folder-fill"></i>
+                    <span class="text-dark fw-bold">Cedula</span>
+                </div>
+                <div class="doc-folder">
+                    <i class="bi bi-folder-fill"></i>
+                    <span class="text-dark fw-bold">Barangay ID</span>
                 </div>
             </div>
-        }
-    </div>
-
-    @* Service Requests Table *@
-    <div class="card shadow-sm border-0">
-        <div class="card-header bg-white py-3">
-            <h5 class="mb-0 text-dark fw-bold"><i class="bi bi-file-earmark-text me-2"></i>Active Service Requests</h5>
         </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th class="ps-3">Req #</th>
-                            <th>Resident Name</th>
-                            <th>Requested Document</th>
-                            <th class="text-center">ID Photo</th>
-                            <th>Current Status</th>
-                            <th class="pe-3 text-center">Update Status & Schedule</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td class="ps-3"><strong>#@item.Request.RequestId</strong></td>
-                                <td>
-                                    <div class="fw-bold">@item.ResidentName</div>
-                                    <span class="badge @(item.User.IsActive ? "text-success" : "text-danger") p-0 small">
-                                        ● @(item.User.IsActive ? "Active" : "Disabled")
-                                    </span>
-                                </td>
-                                <td>
-                                    @* This pulls dynamically from your Services table via the Controller *@
-                                    <span class="badge bg-light text-primary border">@item.RequestedDocument</span>
-                                </td>
-                                <td class="text-center">
-                                    @if (!string.IsNullOrEmpty(item.Request.UploadPath))
-                                    {
-                                        <a href="@item.Request.UploadPath" target="_blank">
-                                            <img src="@item.Request.UploadPath" width="40" height="40" class="rounded border shadow-sm" style="object-fit: cover;" />
-                                        </a>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted small">No Image</span>
-                                    }
-                                </td>
-
-                                <td>
-                                    @{
-                                        var badge = item.Request.StatusId switch { 2 => "bg-success", 3 => "bg-info", 4 => "bg-danger", _ => "bg-secondary" };
-                                    }
-                                    <span class="badge rounded-pill @badge text-uppercase" style="font-size: 0.65rem;">@item.CurrentStatusName</span>
-
-                                    @if (item.Request.DateToClaim != default(DateTime))
-                                    {
-                                        var combinedDateTime = item.Request.DateToClaim.Date.Add(item.Request.TimeToClaim);
-                                        <div class="small text-muted mt-1" style="font-size: 0.7rem;">
-                                            <i class="bi bi-calendar-event"></i>
-                                            @combinedDateTime.ToString("MMM dd 'at' hh:mm tt")
-                                        </div>
-                                    }
-                                </td>
-
-                                <td class="pe-3">
-                                    <form asp-action="UpdateStatus" method="post" class="d-flex flex-column gap-1">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="requestId" value="@item.Request.RequestId" />
-
-                                        <div class="input-group input-group-sm">
-                                            <select name="newStatusId" class="form-select" style="min-width: 120px;">
-                                                @foreach (var status in ViewBag.StatusList)
-                                                {
-                                                    <option value="@status.StatusId" selected="@(item.Request.StatusId == status.StatusId ? "selected" : null)">
-                                                        @status.StatusName
-                                                    </option>
-                                                }
-                                            </select>
-                                        </div>
-
-                                        <div class="input-group input-group-sm">
-                                            <span class="input-group-text"><i class="bi bi-clock"></i></span>
-                                            <input type="datetime-local" name="pickupSchedule" class="form-control"
-                                                   value="@(item.Request.DateToClaim == default(DateTime) ? "" : item.Request.DateToClaim.Date.Add(item.Request.TimeToClaim).ToString("yyyy-MM-ddTHH:mm"))" />
-                                            <button type="submit" class="btn btn-primary">
-                                                <i class="bi bi-check-lg"></i>
-                                            </button>
-                                        </div>
-                                    </form>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+        <div class="col-lg-4">
+            <div class="chart-box card border-0 shadow-sm rounded-4 p-4 text-center h-100 bg-white">
+                <h5 class="fw-bold mb-4 text-dark">Resident Distribution</h5>
+                <div class="donut-chart-container">
+                    <div class="donut-inner">
+                        <span class="fs-2 fw-bold text-dark">@Model.TotalUsers</span>
+                        <small class="text-muted d-block">Total</small>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .bi {
+        display: inline-block;
+        line-height: 1;
+        vertical-align: -.125em;
+        fill: currentColor;
+    }
+
+    .dashboard-container {
+        padding: 1.5rem;
+        background-color: #f8f9fa;
+        min-height: 100vh;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 1.25rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+        border: 1px solid #eee;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .icon-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+    }
+
+    .bg-primary-light {
+        background-color: #e7f1ff;
+    }
+
+    .bg-success-light {
+        background-color: #f0fdf4;
+    }
+
+    .bg-danger-light {
+        background-color: #fff5f5;
+    }
+
+    .bg-info-light {
+        background-color: #e1f5fe;
+    }
+
+    .stat-label {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+    }
+
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-update {
+        font-size: 0.75rem;
+        color: #94a3b8;
+    }
+
+    .documents-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+    }
+
+    .doc-folder {
+        background: white;
+        padding: 2.5rem 1rem;
+        border-radius: 1.25rem;
+        text-align: center;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+
+        .doc-folder i {
+            font-size: 3rem;
+            color: #ffca28; /* Gold folder color */
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        /* Hover effect for folders to match green theme */
+        .doc-folder:hover {
+            border-color: #28a745;
+            background-color: #f1f8e9;
+            transform: translateY(-5px);
+            cursor: pointer;
+        }
+
+    .donut-chart-container {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        background: conic-gradient(#16a34a 70%, #f1f5f9 0);
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .donut-inner {
+        width: 100px;
+        height: 100px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+</style>

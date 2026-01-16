@@ -1,0 +1,120 @@
+﻿@model FPSample.Models.Entities.Admin
+@{
+    ViewData["Title"] = "Admin Profile";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            @* Card container matching your dashboard style *@
+            <div class="card shadow-sm border-0 rounded-4 p-4 bg-white">
+
+                <div class="text-center mb-4">
+                    <i class="bi bi-person-badge text-success" style="font-size: 3rem;"></i>
+                    <h2 class="fw-bold text-dark mt-2">Admin Profile</h2>
+                    <p class="text-muted">Barangay Administration</p>
+                </div>
+
+                @* Read-only Info *@
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Barangay</label>
+                    <input class="form-control bg-light"
+                           value="Barangay Malanday"
+                           readonly />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Username</label>
+                    <input class="form-control bg-light"
+                           value="@(Model?.Username ?? "Administrator")"
+                           readonly />
+                </div>
+
+                <hr class="my-4" style="border-top: 1px solid #e5e7eb;" />
+
+                @* Password Change Form *@
+                <form asp-controller="Admin" asp-action="ChangePassword" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <h5 class="fw-bold mb-3 text-dark">Security Settings</h5>
+
+                    <div class="mb-3">
+                        <label class="form-label">Current Password</label>
+                        <input type="password"
+                               name="currentPassword"
+                               class="form-control"
+                               placeholder="Enter current password"
+                               required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">New Password</label>
+                        <input type="password"
+                               name="newPassword"
+                               id="newPassword"
+                               class="form-control"
+                               placeholder="Enter new password"
+                               required />
+                    </div>
+
+                    @* ADDED: Confirm Password field to fix your error *@
+                    <div class="mb-3">
+                        <label class="form-label">Confirm New Password</label>
+                        <input type="password"
+                               name="confirmPassword"
+                               id="confirmPassword"
+                               class="form-control"
+                               placeholder="Re-type new password"
+                               required />
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-success p-2 fw-bold">
+                            Change Password
+                        </button>
+                    </div>
+
+                </form>
+
+                <div class="text-center mt-4">
+                    <a asp-action="Index" asp-controller="Admin" class="text-decoration-none text-muted">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus {
+        border-color: #41a34d;
+        box-shadow: 0 0 0 0.25rem rgba(65, 163, 77, 0.25);
+    }
+
+    .btn-success {
+        background-color: #41a34d;
+        border: none;
+    }
+
+        .btn-success:hover {
+            background-color: #358a3f;
+        }
+</style>
+
+@section Scripts {
+    <script>
+        // Optional: Client-side validation to alert the user before they even click submit
+        const form = document.querySelector('form');
+        const newPass = document.getElementById('newPassword');
+        const confPass = document.getElementById('confirmPassword');
+
+        form.addEventListener('submit', function (e) {
+            if (newPass.value !== confPass.value) {
+                e.preventDefault();
+                alert("New passwords do not match! Please check again.");
+            }
+        });
+    </script>
+}

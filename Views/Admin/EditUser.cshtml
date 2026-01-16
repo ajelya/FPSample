@@ -1,123 +1,177 @@
 ﻿@model FPSample.Models.Entities.User
 
+@{
+    ViewData["Title"] = "Edit Resident";
+}
+
 <div class="container mt-4 mb-5">
-    <form asp-action="EditUser" method="post" class="card shadow-sm border-0">
-        @Html.AntiForgeryToken()
-        <div class="card-header bg-warning py-3">
-            <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-pencil-square me-2"></i>Edit Resident Information</h5>
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <form asp-controller="Admin" asp-action="EditUser" method="post" class="card shadow-sm border-0 rounded-4 overflow-hidden">
+                @Html.AntiForgeryToken()
+
+                @* HEADER *@
+                <div class="card-header bg-warning py-3">
+                    <h5 class="mb-0 fw-bold text-dark">
+                        <i class="bi bi-pencil-square me-2"></i>Edit Resident Information
+                    </h5>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    @* HIDDEN FIELDS - Crucial for the database update logic *@
+                    <input type="hidden" asp-for="UserId" />
+                    <input type="hidden" asp-for="Username" />
+                    <input type="hidden" asp-for="Password" /> @* Keeping password intact during edit *@
+
+                    @* FULL NAME SECTION *@
+                    <div class="mb-5">
+                        <h6 class="text-primary fw-bold border-bottom pb-2 mb-4">
+                            <i class="bi bi-person me-2"></i>Full Name
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted">First Name</label>
+                                <input asp-for="FirstName" class="form-control bg-light border-0 shadow-sm" placeholder="First Name" required />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted">Middle Name</label>
+                                <input asp-for="MiddleName" class="form-control bg-light border-0 shadow-sm" placeholder="Middle Name" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted">Last Name</label>
+                                <input asp-for="LastName" class="form-control bg-light border-0 shadow-sm" placeholder="Last Name" required />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted">Suffix</label>
+                                <input asp-for="Suffix" class="form-control bg-light border-0 shadow-sm" placeholder="e.g. Jr., III" />
+                            </div>
+                        </div>
+                    </div>
+
+                    @* PERSONAL DETAILS SECTION *@
+                    <div class="mb-5">
+                        <h6 class="text-primary fw-bold border-bottom pb-2 mb-4">
+                            <i class="bi bi-info-circle me-2"></i>Personal Details
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label small fw-bold text-muted">Date of Birth</label>
+                                <input asp-for="DateOfBirth" type="date" class="form-control bg-light border-0 shadow-sm" />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small fw-bold text-muted">Sex</label>
+                                <select asp-for="Sex" class="form-select bg-light border-0 shadow-sm">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted">Civil Status</label>
+                                <input asp-for="CivilStatus" class="form-control bg-light border-0 shadow-sm" placeholder="Status" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted">Religion</label>
+                                <input asp-for="Religion" class="form-control bg-light border-0 shadow-sm" placeholder="Religion" />
+                            </div>
+                        </div>
+                    </div>
+
+                    @* ADDRESS SECTION *@
+                    <div class="mb-5">
+                        <h6 class="text-primary fw-bold border-bottom pb-2 mb-4">
+                            <i class="bi bi-geo-alt me-2"></i>Address
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted">House # / Street</label>
+                                <input asp-for="HouseNoStreet" class="form-control bg-light border-0 shadow-sm" placeholder="123-A St." />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted">Barangay</label>
+                                <input asp-for="Barangay" class="form-control bg-light border-0 shadow-sm" placeholder="Barangay Name" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted">City</label>
+                                <input asp-for="City" class="form-control bg-light border-0 shadow-sm" placeholder="City" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted">Province</label>
+                                <input asp-for="Province" class="form-control bg-light border-0 shadow-sm" placeholder="Province" />
+                            </div>
+                        </div>
+                    </div>
+
+                    @* CONTACT & LENGTH OF STAY *@
+                    <div class="mb-4">
+                        <h6 class="text-primary fw-bold border-bottom pb-2 mb-4">
+                            <i class="bi bi-telephone me-2"></i>Contact & Stay
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted">Years of Stay</label>
+                                <input asp-for="StayYears" type="number" class="form-control bg-light border-0 shadow-sm" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted">Months of Stay</label>
+                                <input asp-for="StayMonths" type="number" class="form-control bg-light border-0 shadow-sm" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted">Contact Number</label>
+                                <input asp-for="ContactNo" class="form-control bg-light border-0 shadow-sm" placeholder="09xxxxxxxxx" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label small fw-bold text-muted">Email Address</label>
+                                <input asp-for="Email" type="email" class="form-control bg-light border-0 shadow-sm" placeholder="name@email.com" />
+                            </div>
+                        </div>
+                    </div>
+
+                    @* CHECKLIST SECTION *@
+                    <div class="mt-4 p-3 bg-light rounded-3">
+                        <h6 class="small fw-bold text-muted mb-2">Registration Status</h6>
+                        <div class="form-check form-check-inline me-4">
+                            <input class="form-check-input" type="radio" asp-for="IsVoter" value="true" id="voter">
+                            <label class="form-check-label fw-bold" for="voter">Voter</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" asp-for="IsVoter" value="false" id="nonvoter">
+                            <label class="form-check-label fw-bold" for="nonvoter">Non-Voter</label>
+                        </div>
+                    </div>
+                </div>
+
+                @* FOOTER BUTTONS *@
+                <div class="card-footer bg-white text-end py-3 px-4 border-0">
+                    <a asp-action="Users" asp-controller="Admin" class="btn btn-outline-secondary px-4 me-2 rounded-pill">
+                        <i class="bi bi-x-circle me-1"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-success px-5 rounded-pill shadow-sm fw-bold">
+                        <i class="bi bi-check-circle me-1"></i>Update Resident
+                    </button>
+                </div>
+            </form>
         </div>
-
-        <div class="card-body p-4">
-            <input type="hidden" asp-for="UserId" />
-            <input type="hidden" asp-for="Username" /> @* Keep these to satisfy [Required] if needed *@
-
-            <div class="mb-4">
-                <h6 class="text-primary border-bottom pb-2 mb-3">Full Name</h6>
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold">First Name</label>
-                        <input asp-for="FirstName" class="form-control" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold">Middle Name</label>
-                        <input asp-for="MiddleName" class="form-control" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold">Last Name</label>
-                        <input asp-for="LastName" class="form-control" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold">Suffix</label>
-                        <input asp-for="Suffix" class="form-control" placeholder="Jr., III, etc." />
-                    </div>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <h6 class="text-primary border-bottom pb-2 mb-3">Personal Details</h6>
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold">Date of Birth</label>
-                        <input asp-for="DateOfBirth" type="date" class="form-control" />
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label small fw-bold">Sex</label>
-                        <select asp-for="Sex" class="form-select">
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold">Civil Status</label>
-                        <input asp-for="CivilStatus" class="form-control" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold">Religion</label>
-                        <input asp-for="Religion" class="form-control" />
-                    </div>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <h6 class="text-primary border-bottom pb-2 mb-3">Address</h6>
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold">House # / Street</label>
-                        <input asp-for="HouseNoStreet" class="form-control" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold">Barangay</label>
-                        <input asp-for="Barangay" class="form-control" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold">City</label>
-                        <input asp-for="City" class="form-control" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold">Province</label>
-                        <input asp-for="Province" class="form-control" />
-                    </div>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <h6 class="text-primary border-bottom pb-2 mb-3">Contact & Length of Stay</h6>
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold">Years of Stay</label>
-                        <input asp-for="StayYears" type="number" class="form-control" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold">Months of Stay</label>
-                        <input asp-for="StayMonths" type="number" class="form-control" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold">Contact Number</label>
-                        <input asp-for="ContactNo" class="form-control" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold">Email Address</label>
-                        <input asp-for="Email" type="email" class="form-control" />
-                    </div>
-                </div>
-            </div>
-
-            <div class="mb-2">
-                <h6 class="text-primary border-bottom pb-2 mb-3">Checklist</h6>
-                <div class="form-check form-check-inline me-4">
-                    <input class="form-check-input" type="radio" asp-for="IsVoter" value="true" id="voter">
-                    <label class="form-check-label fw-bold" for="voter">Voter</label>
-                </div>
-                <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" asp-for="IsVoter" value="false" id="nonvoter">
-                    <label class="form-check-label fw-bold" for="nonvoter">Non-Voter</label>
-                </div>
-            </div>
-        </div>
-
-        <div class="card-footer bg-light text-end py-3">
-            <a asp-action="Users" class="btn btn-outline-secondary px-4 me-2">Cancel</a>
-            <button type="submit" class="btn btn-success px-4">Update Resident</button>
-        </div>
-    </form>
+    </div>
 </div>
+
+<style>
+    /* Styling to match the professional clean dashboard */
+    .form-control, .form-select {
+        padding: 0.6rem 1rem;
+        transition: all 0.3s;
+    }
+
+        .form-control:focus, .form-select:focus {
+            background-color: #fff !important;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05) !important;
+            border: 1px solid #ffc107 !important;
+        }
+
+    .card-header {
+        border-bottom: none;
+    }
+
+    .text-primary {
+        color: #0d6efd !important;
+    }
+</style>

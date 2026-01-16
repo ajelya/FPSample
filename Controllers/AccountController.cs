@@ -23,7 +23,10 @@ namespace FPSample.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            if (HttpContext.Session.GetString("UserRole") != null) return RedirectToAction("Home");
+            var role = HttpContext.Session.GetString("UserRole");
+            if (role == "Admin") return RedirectToAction("Index", "Admin");
+            if (role == "User") return RedirectToAction("Home", "Account");
+
             return View();
         }
 
@@ -40,8 +43,10 @@ namespace FPSample.Controllers
                 {
                     HttpContext.Session.Clear();
                     HttpContext.Session.SetInt32("AdminId", admin.AdminId);
+                    // Use Username or a specific Display Name for the sidebar badge
                     HttpContext.Session.SetString("UserName", admin.Username);
                     HttpContext.Session.SetString("UserRole", "Admin");
+
                     return RedirectToAction("Index", "Admin");
                 }
 
@@ -51,12 +56,21 @@ namespace FPSample.Controllers
 
                 if (user != null)
                 {
+                    // Check if account is disabled by admin
+                    if (!user.IsActive)
+                    {
+                        ModelState.AddModelError("", "Your account has been disabled. Please contact the administrator.");
+                        return View(model);
+                    }
+
                     HttpContext.Session.Clear();
                     HttpContext.Session.SetInt32("UserId", user.UserId);
                     HttpContext.Session.SetString("UserName", user.FirstName);
                     HttpContext.Session.SetString("UserRole", "User");
+
                     return RedirectToAction("Home", "Account");
                 }
+
                 ModelState.AddModelError("", "Invalid username or password.");
             }
             return View(model);
@@ -75,6 +89,7 @@ namespace FPSample.Controllers
                 ModelState.AddModelError("", "Passwords do not match.");
             }
 
+            // Remove non-user-input fields from validation
             ModelState.Remove("Role");
             ModelState.Remove("IsActive");
             ModelState.Remove("ServiceRequests");
@@ -90,7 +105,7 @@ namespace FPSample.Controllers
                         return View(model);
                     }
 
-                    model.IsActive = true;
+                    model.IsActive = true; // Default to active
                     _context.Users.Add(model);
                     await _context.SaveChangesAsync();
 
@@ -106,24 +121,20 @@ namespace FPSample.Controllers
         }
 
         // ================= USER PAGES =================
+
         public IActionResult Home()
         {
+            // Security: Ensure only Residents can access User Home
             if (HttpContext.Session.GetString("UserRole") != "User") return RedirectToAction("Login");
             return View();
         }
 
-        /// <summary>
-        /// Fetches all service requests for the logged-in user.
-        /// Uses Eager Loading (.Include) to ensure service names reflect dynamically.
-        /// </summary>
         public async Task<IActionResult> MyRequests()
         {
             if (HttpContext.Session.GetString("UserRole") != "User") return RedirectToAction("Login");
 
             int? userId = HttpContext.Session.GetInt32("UserId");
 
-            // We include 'Service' (the navigation property) to get the ServiceName 
-            // from the Services table automatically.
             var requests = await _context.ServiceRequests
                                  .Include(r => r.Service)
                                  .Include(r => r.Histories)
@@ -140,7 +151,9 @@ namespace FPSample.Controllers
         public async Task<IActionResult> Profile()
         {
             int? userId = HttpContext.Session.GetInt32("UserId");
-            if (userId == null) return RedirectToAction("Login");
+            if (userId == null || HttpContext.Session.GetString("UserRole") != "User")
+                return RedirectToAction("Login");
+
             var user = await _context.Users.FindAsync(userId);
             return user == null ? NotFound() : View(user);
         }
@@ -159,7 +172,7 @@ namespace FPSample.Controllers
                 var userInDb = await _context.Users.FindAsync(userId);
                 if (userInDb != null)
                 {
-                    // Update user fields
+                    // Map updated fields
                     userInDb.FirstName = updatedUser.FirstName;
                     userInDb.MiddleName = updatedUser.MiddleName;
                     userInDb.LastName = updatedUser.LastName;
@@ -192,6 +205,7 @@ namespace FPSample.Controllers
             return View(updatedUser);
         }
 
+        // ================= LOGOUT =================
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
