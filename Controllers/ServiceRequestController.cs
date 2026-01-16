@@ -3,7 +3,10 @@ using FPSample.Models.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace FPSample.Controllers
 {
@@ -29,11 +32,13 @@ namespace FPSample.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Fetch data: Include Histories and Admin for the status timeline
+            // FETCH FIX: Added .Include(r => r.Service) so that new services 
+            // added by admins will display their names automatically.
             var myRequests = await _context.ServiceRequests
-                .Where(r => r.UserId == userId)
+                .Include(r => r.Service)
                 .Include(r => r.Histories)
                     .ThenInclude(h => h.Admin)
+                .Where(r => r.UserId == userId)
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
 
@@ -49,13 +54,11 @@ namespace FPSample.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Populate the dropdown for Services
             ViewBag.ServiceList = _context.Services.Where(s => s.IsEnabled).ToList();
             return View();
         }
 
         // GET: ServiceRequest/GetPurposes?serviceId=X
-        // FIXED: Renamed anonymous object properties to match your JavaScript
         [HttpGet]
         public async Task<JsonResult> GetPurposes(int serviceId)
         {
@@ -63,8 +66,8 @@ namespace FPSample.Controllers
                 .Where(p => p.ServiceId == serviceId)
                 .Select(p => new
                 {
-                    purposeId = p.PurposeId,   // JavaScript expects lowercase 'p'
-                    purposeName = p.PurposeName // JavaScript expects lowercase 'p'
+                    purposeId = p.PurposeId,
+                    purposeName = p.PurposeName
                 })
                 .ToListAsync();
 
@@ -77,17 +80,20 @@ namespace FPSample.Controllers
         public async Task<IActionResult> Create(ServiceRequest request)
         {
             int? loggedInUserId = HttpContext.Session.GetInt32("UserId");
-
             if (loggedInUserId == null) return RedirectToAction("Login", "Account");
 
-            // Remove non-user-input fields from validation
+            // VALIDATION FIX: We must remove navigation properties and auto-filled fields
+            // so that ModelState.IsValid returns 'true'.
             ModelState.Remove("UserId");
             ModelState.Remove("StatusId");
             ModelState.Remove("UploadPath");
+            ModelState.Remove("Service");     // Added: Navigation Property
+            ModelState.Remove("User");        // Added: Navigation Property
+            ModelState.Remove("Histories");   // Added: Navigation Property
 
             if (ModelState.IsValid)
             {
-                // Handle File Upload for Barangay ID
+                // Handle File Upload
                 if (request.ProfilePicture != null)
                 {
                     string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "uploads/ids");
@@ -113,7 +119,8 @@ namespace FPSample.Controllers
                 return RedirectToAction("MyRequests");
             }
 
-            // If we got here, something failed; reload the services for the view
+            // If we got here, validation failed. 
+            // You can check the errors in the debugger by looking at ModelState.Values.
             ViewBag.ServiceList = _context.Services.Where(s => s.IsEnabled).ToList();
             return View(request);
         }

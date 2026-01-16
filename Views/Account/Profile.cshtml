@@ -21,26 +21,34 @@
             </div>
         }
 
+        @* This summary helps you identify if any hidden required fields are still missing *@
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
         <form asp-action="Profile" method="post" id="profileForm">
+            @Html.AntiForgeryToken()
+
+            @* Primary Key is essential for the Update to find the right record *@
             <input type="hidden" asp-for="UserId" />
 
             <div class="profile-section">
                 <h5 class="profile-subtitle">Full Name</h5>
                 <div class="row g-3">
                     <div class="col-md-3">
-                        <label class="form-label custom-label">First Name</label>
+                        <label asp-for="FirstName" class="form-label custom-label">First Name</label>
                         <input asp-for="FirstName" class="form-control custom-input" readonly />
+                        <span asp-validation-for="FirstName" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label custom-label">Middle Name</label>
+                        <label asp-for="MiddleName" class="form-label custom-label">Middle Name</label>
                         <input asp-for="MiddleName" class="form-control custom-input" readonly />
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label custom-label">Last Name</label>
+                        <label asp-for="LastName" class="form-label custom-label">Last Name</label>
                         <input asp-for="LastName" class="form-control custom-input" readonly />
+                        <span asp-validation-for="LastName" class="text-danger"></span>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label custom-label">Suffix</label>
+                        <label asp-for="Suffix" class="form-label custom-label">Suffix</label>
                         <input asp-for="Suffix" class="form-control custom-input" readonly />
                     </div>
                 </div>
@@ -50,23 +58,42 @@
                 <h5 class="profile-subtitle">Personal Details</h5>
                 <div class="row g-3">
                     <div class="col-md-3">
-                        <label class="form-label custom-label">Date of Birth</label>
+                        <label asp-for="DateOfBirth" class="form-label custom-label">Date of Birth</label>
                         <input asp-for="DateOfBirth" type="date" class="form-control custom-input" id="dobInput" readonly />
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label custom-label">Sex</label>
+                        <label asp-for="Sex" class="form-label custom-label">Sex</label>
                         <select asp-for="Sex" class="form-select custom-input" disabled>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label custom-label">Civil Status</label>
+                        <label asp-for="CivilStatus" class="form-label custom-label">Civil Status</label>
                         <input asp-for="CivilStatus" class="form-control custom-input" readonly />
                     </div>
                     <div class="col-md-2">
                         <label class="form-label custom-label">Age</label>
                         <input id="ageDisplay" class="form-control custom-input bg-light" readonly />
+                    </div>
+                    <div class="col-md-2">
+                        <label asp-for="Religion" class="form-label custom-label">Religion</label>
+                        <input asp-for="Religion" class="form-control custom-input" readonly />
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-section">
+                <h5 class="profile-subtitle">Contact Information</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label custom-label">Email Address</label>
+                        <input asp-for="Email" class="form-control custom-input" readonly />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ContactNo" class="form-label custom-label">Contact Number</label>
+                        <input asp-for="ContactNo" class="form-control custom-input" readonly />
                     </div>
                 </div>
             </div>
@@ -75,38 +102,51 @@
                 <h5 class="profile-subtitle">Address & Residency</h5>
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label custom-label">House # / Street</label>
+                        <label asp-for="HouseNoStreet" class="form-label custom-label">House # / Street</label>
                         <input asp-for="HouseNoStreet" class="form-control custom-input" readonly />
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label custom-label">Barangay</label>
+                        <label asp-for="Barangay" class="form-label custom-label">Barangay</label>
                         <input asp-for="Barangay" class="form-control custom-input" readonly />
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label custom-label">City</label>
+                    <div class="col-md-3">
+                        <label asp-for="City" class="form-label custom-label">City</label>
                         <input asp-for="City" class="form-control custom-input" readonly />
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label custom-label">Province</label>
+                    <div class="col-md-3">
+                        <label asp-for="Province" class="form-label custom-label">Province</label>
                         <input asp-for="Province" class="form-control custom-input" readonly />
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label custom-label">Stay (Years)</label>
+                        <label asp-for="StayYears" class="form-label custom-label">Stay (Years)</label>
                         <input asp-for="StayYears" class="form-control custom-input" readonly />
+                    </div>
+                    <div class="col-md-2">
+                        <label asp-for="StayMonths" class="form-label custom-label">Stay (Months)</label>
+                        <input asp-for="StayMonths" class="form-control custom-input" readonly />
+                    </div>
+                    <div class="col-md-2">
+                        <label asp-for="IsVoter" class="form-label custom-label">Registered Voter?</label>
+                        <select asp-for="IsVoter" class="form-select custom-input" disabled>
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
             <div id="passwordSection" style="display:none;" class="profile-section">
-                <h5 class="profile-subtitle">Update Security</h5>
+                <h5 class="profile-subtitle">Security Update</h5>
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label custom-label">Username</label>
+                        <label asp-for="Username" class="form-label custom-label">Username</label>
                         <input asp-for="Username" class="form-control custom-input" readonly />
+                        <span asp-validation-for="Username" class="text-danger"></span>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label custom-label">New Password</label>
+                        <label asp-for="Password" class="form-label custom-label">New Password</label>
                         <input asp-for="Password" type="password" class="form-control custom-input" placeholder="Leave blank to keep current" />
+                        <small class="text-muted">Security notice: Only fill this out if you wish to change your current password.</small>
                     </div>
                 </div>
             </div>
