@@ -18,12 +18,12 @@
                 </div>
 
                 <div class="card-body p-4 p-md-5">
-                    @* HIDDEN FIELDS - Crucial for the database update logic *@
+                   
                     <input type="hidden" asp-for="UserId" />
                     <input type="hidden" asp-for="Username" />
-                    <input type="hidden" asp-for="Password" /> @* Keeping password intact during edit *@
+                    <input type="hidden" asp-for="Password" /> 
 
-                    @* FULL NAME SECTION *@
+                   
                     <div class="mb-5">
                         <h6 class="text-primary fw-bold border-bottom pb-2 mb-4">
                             <i class="bi bi-person me-2"></i>Full Name
@@ -48,7 +48,7 @@
                         </div>
                     </div>
 
-                    @* PERSONAL DETAILS SECTION *@
+      
                     <div class="mb-5">
                         <h6 class="text-primary fw-bold border-bottom pb-2 mb-4">
                             <i class="bi bi-info-circle me-2"></i>Personal Details
@@ -76,7 +76,7 @@
                         </div>
                     </div>
 
-                    @* ADDRESS SECTION *@
+                
                     <div class="mb-5">
                         <h6 class="text-primary fw-bold border-bottom pb-2 mb-4">
                             <i class="bi bi-geo-alt me-2"></i>Address
@@ -101,7 +101,7 @@
                         </div>
                     </div>
 
-                    @* CONTACT & LENGTH OF STAY *@
+         
                     <div class="mb-4">
                         <h6 class="text-primary fw-bold border-bottom pb-2 mb-4">
                             <i class="bi bi-telephone me-2"></i>Contact & Stay
@@ -126,7 +126,7 @@
                         </div>
                     </div>
 
-                    @* CHECKLIST SECTION *@
+                 
                     <div class="mt-4 p-3 bg-light rounded-3">
                         <h6 class="small fw-bold text-muted mb-2">Registration Status</h6>
                         <div class="form-check form-check-inline me-4">
@@ -140,7 +140,6 @@
                     </div>
                 </div>
 
-                @* FOOTER BUTTONS *@
                 <div class="card-footer bg-white text-end py-3 px-4 border-0">
                     <a asp-action="Users" asp-controller="Admin" class="btn btn-outline-secondary px-4 me-2 rounded-pill">
                         <i class="bi bi-x-circle me-1"></i>Cancel
@@ -155,7 +154,7 @@
 </div>
 
 <style>
-    /* Styling to match the professional clean dashboard */
+  
     .form-control, .form-select {
         padding: 0.6rem 1rem;
         transition: all 0.3s;

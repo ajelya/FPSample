@@ -33,17 +33,17 @@
                             <tr>
                                 <td class="text-muted">@item.CreatedAt.ToString("MMM dd, yyyy")</td>
 
-                                @* DYNAMIC FIX: Fetches the ServiceName from the DB automatically *@
+                              
                                 <td class="fw-bold text-dark">
                                     <i class="bi bi-file-earmark-text text-success me-1"></i>
                                     @if (item.Service != null)
                                     {
-                                        @* This pulls the name the Admin typed in the Services table *@
+                                
                                         @item.Service.ServiceName
                                     }
                                     else
                                     {
-                                        @* Fallback: Only shows if the ServiceId doesn't exist in the Services table *@
+                                 
                                         <span class="text-muted">Service #@item.ServiceId</span>
                                     }
                                 </td>

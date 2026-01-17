@@ -34,7 +34,7 @@ namespace FPSample.Controllers
                 ApprovedRequests = await _context.ServiceRequests.CountAsync(r => r.StatusId == 2),
                 ReadyToClaim = await _context.ServiceRequests.CountAsync(r => r.StatusId == 3),
                 RejectedRequests = await _context.ServiceRequests.CountAsync(r => r.StatusId == 4),
-                // We leave ActiveRequests empty here to declutter the dashboard
+            
                 ActiveRequests = new List<dynamic>()
             };
 

@@ -13,9 +13,9 @@ namespace FPSample.Models.Entities
         [Required]
         public string FirstName { get; set; }
 
-        public string? MiddleName { get; set; } // Optional
+        public string? MiddleName { get; set; } 
 
-        public string? Suffix { get; set; } // Optional
+        public string? Suffix { get; set; } 
 
         [Required]
         [DataType(DataType.Date)]

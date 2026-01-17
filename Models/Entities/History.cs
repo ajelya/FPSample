@@ -12,11 +12,10 @@ namespace FPSample.Models.Entities
         public int StatusId { get; set; }
         public DateTime UpdatedAt { get; set; }
 
-        // NAVIGATION PROPERTIES
+
         [ForeignKey("RequestId")]
         public virtual ServiceRequest ServiceRequest { get; set; }
 
-        // Make sure this points to the Admin model since that's what you use in Login
         [ForeignKey("AdminId")]
         public virtual Admin Admin { get; set; }
     }

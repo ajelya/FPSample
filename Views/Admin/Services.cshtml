@@ -5,14 +5,13 @@
 }
 
 <div class="container-fluid py-4 px-4">
-    @* --- HEADER SECTION (Matched exactly to Active Service Requests & Resident Management) --- *@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div class="d-flex align-items-center">
-            @* Consistent bi-list-ul icon in brand green *@
+       
             <i class="bi bi-list-ul fs-3 me-3" style="color: #28a745;"></i>
             <h3 class="mb-0 fw-bold" style="color: #1b5e20;">Document Services</h3>
         </div>
-        @* Action Button *@
+     
         <button class="btn btn-success shadow-sm d-flex align-items-center fw-bold"
                 style="background-color: #28a745; border: none; padding: 10px 20px; border-radius: 8px;"
                 onclick="openServiceModal(0, '', '', [])">
@@ -28,11 +27,11 @@
         </div>
     }
 
-    @* --- TABLE CARD --- *@
+   
     <div class="card shadow-sm border-0 rounded-3">
         <div class="table-responsive">
             <table class="table align-middle mb-0 custom-service-table">
-                @* Light Green Header *@
+             
                 <thead style="background-color: #f1f8e9;">
                     <tr>
                         <th class="ps-4 text-muted fw-bold text-uppercase" style="font-size: 0.85rem; letter-spacing: 0.5px;">Service Name</th>
@@ -80,13 +79,13 @@
                             </td>
                             <td class="pe-4">
                                 <div class="d-flex justify-content-center align-items-center gap-2">
-                                    @* Edit Button *@
+                                 
                                     <button type="button" class="btn-action btn-edit" title="Edit Service"
                                             onclick="openServiceModal(@s.ServiceId, '@s.ServiceName', '@s.Description', @Json.Serialize(s.ServicePurposes.Select(p => p.PurposeName)))">
                                         <i class="bi bi-pencil-square"></i>
                                     </button>
 
-                                    @* Toggle Status Button *@
+                                   
                                     <form asp-action="ToggleServiceStatus" method="post" class="m-0">
                                         <input type="hidden" name="id" value="@s.ServiceId" />
                                         <button type="submit" class="btn btn-sm @(s.IsEnabled ? "btn-warning text-dark" : "btn-success") fw-bold px-3"
@@ -95,7 +94,7 @@
                                         </button>
                                     </form>
 
-                                    @* Delete Button *@
+                                   
                                     <form asp-action="DeleteService" method="post" class="m-0" onsubmit="return confirm('Are you sure you want to delete this service?');">
                                         <input type="hidden" name="id" value="@s.ServiceId" />
                                         <button type="submit" class="btn-action btn-delete" title="Delete Service">
@@ -112,7 +111,7 @@
     </div>
 </div>
 
-@* Modal for Add/Edit *@
+
 <div class="modal fade" id="serviceModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content shadow border-0" style="border-radius: 12px;">
@@ -151,7 +150,6 @@
 </div>
 
 <style>
-    /* Table Layout Styling */
     .custom-service-table thead th {
         padding-top: 18px;
         padding-bottom: 18px;
@@ -168,7 +166,6 @@
         transition: background-color 0.2s;
     }
 
-    /* Action Buttons (Pencil/Trash) */
     .btn-action {
         width: 34px;
         height: 34px;
@@ -201,7 +198,6 @@
             color: white;
         }
 
-    /* Input Focus State */
     .form-control:focus {
         border-color: #28a745;
         box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.15);

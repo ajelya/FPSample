@@ -21,13 +21,13 @@
             </div>
         }
 
-        @* This summary helps you identify if any hidden required fields are still missing *@
+       
         <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
         <form asp-action="Profile" method="post" id="profileForm">
             @Html.AntiForgeryToken()
 
-            @* Primary Key is essential for the Update to find the right record *@
+          
             <input type="hidden" asp-for="UserId" />
 
             <div class="profile-section">
@@ -239,7 +239,6 @@
         const passwordSection = document.getElementById('passwordSection');
         const inputs = profileForm.querySelectorAll('input, select');
 
-        // 1. Toggle Edit Mode
         editBtn.addEventListener('click', () => {
             inputs.forEach(input => {
                 input.removeAttribute('readonly');
@@ -250,7 +249,6 @@
             passwordSection.style.display = 'block';
         });
 
-        // 2. Age Calculation
         const dobInput = document.getElementById('dobInput');
         const ageDisplay = document.getElementById('ageDisplay');
 

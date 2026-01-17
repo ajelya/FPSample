@@ -12,7 +12,6 @@ namespace FPSample.Models.Entities
         public int RequestId { get; set; }
         public int? UserId { get; set; }
 
-        // This links to the 'ServiceId' in your Services table
         public int ServiceId { get; set; }
         public int PurposeId { get; set; }
 
@@ -30,8 +29,7 @@ namespace FPSample.Models.Entities
         [NotMapped]
         public IFormFile? ProfilePicture { get; set; }
 
-        // NAVIGATION PROPERTY
-        // This MUST be named 'Service' to match the .Include(r => r.Service) in the controller
+     
         [ForeignKey("ServiceId")]
         public virtual Service Service { get; set; }
 

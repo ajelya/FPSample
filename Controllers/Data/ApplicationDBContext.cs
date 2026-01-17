@@ -25,9 +25,9 @@ namespace FPSample.Controllers.Data
 
             // 2. Define the Relationship: One Service has many ServiceRequests
             modelBuilder.Entity<ServiceRequest>()
-                .HasOne(sr => sr.Service)       // ServiceRequest has one Service
-                .WithMany()                      // Service can have many requests
-                .HasForeignKey(sr => sr.ServiceId) // The link is ServiceId
+                .HasOne(sr => sr.Service)       
+                .WithMany()                     
+                .HasForeignKey(sr => sr.ServiceId) 
                 .OnDelete(DeleteBehavior.Restrict);
 
             // 3. (Optional) If your History table links to Admin

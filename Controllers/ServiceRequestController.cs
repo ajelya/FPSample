@@ -32,8 +32,7 @@ namespace FPSample.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // FETCH FIX: Added .Include(r => r.Service) so that new services 
-            // added by admins will display their names automatically.
+ 
             var myRequests = await _context.ServiceRequests
                 .Include(r => r.Service)
                 .Include(r => r.Histories)
@@ -82,14 +81,13 @@ namespace FPSample.Controllers
             int? loggedInUserId = HttpContext.Session.GetInt32("UserId");
             if (loggedInUserId == null) return RedirectToAction("Login", "Account");
 
-            // VALIDATION FIX: We must remove navigation properties and auto-filled fields
-            // so that ModelState.IsValid returns 'true'.
+            
             ModelState.Remove("UserId");
             ModelState.Remove("StatusId");
             ModelState.Remove("UploadPath");
-            ModelState.Remove("Service");     // Added: Navigation Property
-            ModelState.Remove("User");        // Added: Navigation Property
-            ModelState.Remove("Histories");   // Added: Navigation Property
+            ModelState.Remove("Service");     
+            ModelState.Remove("User");        
+            ModelState.Remove("Histories");   
 
             if (ModelState.IsValid)
             {
@@ -110,7 +108,7 @@ namespace FPSample.Controllers
                 }
 
                 request.UserId = loggedInUserId.Value;
-                request.StatusId = 0; // 0 = Pending
+                request.StatusId = 0;
                 request.CreatedAt = DateTime.Now;
 
                 _context.ServiceRequests.Add(request);
@@ -119,8 +117,7 @@ namespace FPSample.Controllers
                 return RedirectToAction("MyRequests");
             }
 
-            // If we got here, validation failed. 
-            // You can check the errors in the debugger by looking at ModelState.Values.
+
             ViewBag.ServiceList = _context.Services.Where(s => s.IsEnabled).ToList();
             return View(request);
         }

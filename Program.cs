@@ -15,7 +15,7 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddControllersWithViews();
 
-// Database Configuration
+
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -34,15 +34,15 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
-// Session must be used before Authorization
+
 app.UseSession();
 
 app.UseAuthorization();
 
-// --- MODIFY THIS PART ---
+
 app.MapControllerRoute(
     name: "default",
-    // Changed controller from 'Home' to 'Account' and action from 'Index' to 'Login'
+
     pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();

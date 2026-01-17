@@ -6,30 +6,30 @@
 
 <div class="container mt-4">
     <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
-        @* --- UPDATED HEADER: Matches Brand Green --- *@
+   
         <div class="card-header py-3 text-white" style="background-color: #41a34d;">
             <h5 class="mb-0 fw-bold"><i class="bi bi-person-badge me-2"></i>Resident Profile</h5>
         </div>
 
         <div class="card-body p-4 p-md-5">
             <div class="row align-items-center">
-                @* Left Profile Column *@
+                
                 <div class="col-md-4 text-center border-end">
-                    @* Updated icon color to brand green with transparency *@
+                 
                     <div class="display-1 opacity-25" style="color: #41a34d;">
                         <i class="bi bi-person-circle"></i>
                     </div>
                     <h3 class="fw-bold mt-3 mb-1" style="color: #1b5e20;">@Model.FirstName @Model.LastName</h3>
                     <p class="text-muted mb-3">Resident ID: #@Model.UserId</p>
 
-                    @* Status Badge *@
+                  
                     <span class="badge @(Model.IsActive ? "bg-success" : "bg-danger") px-4 py-2 rounded-pill shadow-sm">
                         <i class="bi @(Model.IsActive ? "bi-check-circle" : "bi-x-circle") me-1"></i>
                         @(Model.IsActive ? "Active Resident" : "Deactivated")
                     </span>
                 </div>
 
-                @* Right Details Column *@
+             
                 <div class="col-md-8 px-md-5 mt-4 mt-md-0">
                     <div class="row g-4">
                         <div class="col-sm-6">
@@ -50,19 +50,19 @@
                         </div>
                         <div class="col-sm-6">
                             <label class="text-muted small text-uppercase fw-bold d-block mb-1">Voter Status</label>
-                            @* Updated voter badge to a light green/teal style instead of blue *@
+                    
                             <span class="badge @(Model.IsVoter ? "bg-success-subtle text-success border border-success-subtle" : "bg-light text-muted border") px-3">
                                 @(Model.IsVoter ? "Registered Voter" : "Non-Voter")
                             </span>
                         </div>
                     </div>
 
-                    @* Action Buttons *@
+                    
                     <div class="mt-5 pt-4 border-top">
                         <a asp-action="Users" asp-controller="Admin" class="btn btn-light px-4 me-2 rounded-pill shadow-sm border fw-bold text-muted">
                             <i class="bi bi-arrow-left me-1"></i>Back to List
                         </a>
-                        @* Matches the brand green theme *@
+                  
                         <a asp-action="EditUser" asp-route-id="@Model.UserId" class="btn btn-success px-4 rounded-pill shadow-sm fw-bold" style="background-color: #41a34d; border: none;">
                             <i class="bi bi-pencil-square me-1"></i>Edit Information
                         </a>
@@ -74,15 +74,15 @@
 </div>
 
 <style>
-    /* Subtle hover effect for the detail groups */
+
     .row.g-4 > div:hover {
-        background-color: #f1f8e9; /* Light green hover matching your tables */
+        background-color: #f1f8e9; 
         border-radius: 8px;
         transition: background-color 0.2s ease;
     }
 
     label {
         letter-spacing: 0.5px;
-        color: #1b5e20 !important; /* Dark green labels for better readability */
+        color: #1b5e20 !important; 
     }
 </style>

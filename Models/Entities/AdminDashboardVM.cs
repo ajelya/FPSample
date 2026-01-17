@@ -7,8 +7,6 @@
         public int ApprovedRequests { get; set; }
         public int RejectedRequests { get; set; }
         public int ReadyToClaim { get; set; }
-
-        // This property holds the data for your table
         public IEnumerable<dynamic> ActiveRequests { get; set; }
     }
 }
